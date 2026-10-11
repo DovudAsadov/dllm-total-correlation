@@ -1,0 +1,33 @@
+\begin{table}[!ht]
+\centering
+\small
+\setlength{\tabcolsep}{5pt}
+\caption{\textbf{What selecting the predictor costs.} Every prediction behind
+Table~\ref{tab:explains} is out-of-fold, but the winning feature set and model are chosen
+over $40$ candidates using those same out-of-fold
+scores, which biases the residual downward. That bias runs the wrong way for an upper
+bound, so we price it rather than assume it away: \emph{nested} repeats the whole
+procedure with $5$ outer document-grouped folds for
+evaluation and $5$ inner folds for selection, so no
+block's outcome ever influences the model that predicts it. The largest movement across
+the eight settings is $+0.035$ bits, and the range of
+residuals is unchanged at two decimal places. \emph{selected}: the feature set and model
+the inner folds chose most often.}
+\label{tab:nested}
+\begin{tabular}{lrrrrl}
+\toprule
+ & & \multicolumn{2}{c}{residual (bits)} & & \\
+\cmidrule(lr){3-4}
+Model / regime & $n$ & reported & nested & $\Delta$ & selected \\
+\midrule
+Dream base / infill & $494$ & $1.129$ & $1.132$ & $+0.003$ & \texttt{\footnotesize profile\_plus\_scalars/ridge100} \\
+Dream base / suffix & $247$ & $1.090$ & $1.095$ & $+0.005$ & \texttt{\footnotesize per\_position\_conf\_entropy/ridge1} \\
+Dream instr. / infill & $494$ & $1.623$ & $1.633$ & $+0.010$ & \texttt{\footnotesize per\_position\_conf\_entropy/ridge10} \\
+Dream instr. / suffix & $247$ & $1.840$ & $1.845$ & $+0.005$ & \texttt{\footnotesize per\_position\_conf\_entropy/ridge1} \\
+LLaDA base / infill & $516$ & $0.742$ & $0.743$ & $+0.000$ & \texttt{\footnotesize per\_position\_conf\_entropy/ridge10} \\
+LLaDA base / suffix & $258$ & $1.055$ & $1.072$ & $+0.017$ & \texttt{\footnotesize profile\_plus\_scalars/ridge10} \\
+LLaDA instr. / infill & $516$ & $0.873$ & $0.908$ & $+0.035$ & \texttt{\footnotesize per\_position\_conf\_entropy/knn10} \\
+LLaDA instr. / suffix & $258$ & $1.174$ & $1.172$ & $-0.002$ & \texttt{\footnotesize per\_position\_conf\_entropy/ridge10} \\
+\bottomrule
+\end{tabular}
+\end{table}

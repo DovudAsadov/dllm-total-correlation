@@ -1,0 +1,31 @@
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\caption{\textbf{Every marginal rule against measured $\mathrm{C}$, on real
+checkpoints.} Spearman $\rho$ between each proxy's safety score and the meter's
+$\widehat{\mathrm{C}}$, so a faithful proxy is negative. $^{*}$ marks intervals
+excluding zero under a document-clustered bootstrap ($10^4$ resamples), and every one of
+the
+48 correlations does. Pooling across the block
+(mean, sum) beats gating on its weakest position (min, max) in every setting. The last column is a \emph{paired} bootstrap of the difference in $\rho$ between
+the min versions of top-2 margin and confidence on the same blocks, positive where
+confidence is the better rule. The pooled comparisons are in Table~\ref{tab:paired}. This is
+the correct test for ``does margin beat confidence'' and is strictly stronger than asking
+whether two marginal intervals overlap. Our exact audit (Table~\ref{tab:proxy}) favours
+margin, and on real checkpoints that reverses.}\label{tab:fidelity}
+\begin{tabular}{lrrrrrrr}
+\toprule
+Model / regime & conf (min) & conf (mean) & marg (min) & marg (mean) & negH (max) & negH (sum) & marg$-$conf \\
+\midrule
+Dream base / infill & $-0.72$$^{*}$ & $-0.83$$^{*}$ & $-0.69$$^{*}$ & $-0.83$$^{*}$ & $-0.77$$^{*}$ & $-0.83$$^{*}$ & $+0.033$$^{*}$ \\
+Dream base / suffix & $-0.79$$^{*}$ & $-0.89$$^{*}$ & $-0.65$$^{*}$ & $-0.86$$^{*}$ & $-0.78$$^{*}$ & $-0.88$$^{*}$ & $+0.140$$^{*}$ \\
+Dream instr. / infill & $-0.23$$^{*}$ & $-0.33$$^{*}$ & $-0.28$$^{*}$ & $-0.37$$^{*}$ & $-0.17$$^{*}$ & $-0.23$$^{*}$ & $-0.045$$^{*}$ \\
+Dream instr. / suffix & $-0.46$$^{*}$ & $-0.54$$^{*}$ & $-0.45$$^{*}$ & $-0.58$$^{*}$ & $-0.36$$^{*}$ & $-0.45$$^{*}$ & $+0.007$ \\
+LLaDA base / infill & $-0.73$$^{*}$ & $-0.86$$^{*}$ & $-0.69$$^{*}$ & $-0.85$$^{*}$ & $-0.79$$^{*}$ & $-0.89$$^{*}$ & $+0.041$$^{*}$ \\
+LLaDA base / suffix & $-0.78$$^{*}$ & $-0.89$$^{*}$ & $-0.60$$^{*}$ & $-0.83$$^{*}$ & $-0.84$$^{*}$ & $-0.94$$^{*}$ & $+0.189$$^{*}$ \\
+LLaDA instr. / infill & $-0.75$$^{*}$ & $-0.85$$^{*}$ & $-0.71$$^{*}$ & $-0.84$$^{*}$ & $-0.80$$^{*}$ & $-0.87$$^{*}$ & $+0.041$$^{*}$ \\
+LLaDA instr. / suffix & $-0.76$$^{*}$ & $-0.89$$^{*}$ & $-0.61$$^{*}$ & $-0.85$$^{*}$ & $-0.81$$^{*}$ & $-0.90$$^{*}$ & $+0.144$$^{*}$ \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,862 @@
+{
+  "bound_check": {
+    "pooled": {
+      "label": "pooled (graded + natural)",
+      "n_samples": 376,
+      "violations_budget_bound": 0,
+      "violations_refined_bound": 0,
+      "min_slack_bits": 0.0,
+      "median_slack_bits": 1.5,
+      "max_slack_bits": 4.584962500721156,
+      "min_slack_refined_bits": 0.0,
+      "median_slack_refined_bits": 0.6666666666666665,
+      "n_positive_budget": 342,
+      "min_slack_positive_budget_bits": 1.0,
+      "median_slack_positive_budget_bits": 1.584962500721156,
+      "min_slack_refined_positive_budget_bits": 0.0,
+      "n_refined_bound_tight_positive_budget": 145,
+      "refined_bound_tight_tasks": [
+        "graded[rho=0.000]",
+        "replace_random",
+        "shuffle",
+        "shuffle_no_identity"
+      ],
+      "tightest_sample": {
+        "slack_bits": 1.0,
+        "task": "graded[rho=0.000]",
+        "budget_bits": 2.0,
+        "C_bits": 1.0
+      },
+      "n_zero_budget": 34,
+      "max_C_among_zero_budget": 0.0,
+      "max_C_bits": 3.4595614355766697
+    },
+    "natural": {
+      "label": "natural only",
+      "n_samples": 355,
+      "violations_budget_bound": 0,
+      "violations_refined_bound": 0,
+      "min_slack_bits": 0.0,
+      "median_slack_bits": 1.0,
+      "max_slack_bits": 4.584962500721156,
+      "min_slack_refined_bits": 0.0,
+      "median_slack_refined_bits": 0.0,
+      "n_positive_budget": 321,
+      "min_slack_positive_budget_bits": 1.0,
+      "median_slack_positive_budget_bits": 1.584962500721156,
+      "min_slack_refined_positive_budget_bits": 0.0,
+      "n_refined_bound_tight_positive_budget": 144,
+      "refined_bound_tight_tasks": [
+        "replace_random",
+        "shuffle",
+        "shuffle_no_identity"
+      ],
+      "tightest_sample": {
+        "slack_bits": 1.0,
+        "task": "replace_random",
+        "budget_bits": 2.0,
+        "C_bits": 1.0
+      },
+      "n_zero_budget": 34,
+      "max_C_among_zero_budget": 0.0,
+      "max_C_bits": 3.4595614355766697
+    }
+  },
+  "exact_binary_equal_marginals": {
+    "rows": [
+      {
+        "k": 2,
+        "p": 0.5,
+        "per_position_H_bits": 1.0,
+        "budget_bits": 2.0,
+        "H_min_exact_bits": 1.0000000000000002,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 0.9999999999999998,
+        "C_max_closed_form_bits": 1.0,
+        "abs_deviation_bits": 2.220446049250313e-16,
+        "diameter_bits": 0.9999999999999998
+      },
+      {
+        "k": 2,
+        "p": 0.55,
+        "per_position_H_bits": 0.9927744539878083,
+        "budget_bits": 1.9855489079756166,
+        "H_min_exact_bits": 0.9927744539878085,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 0.9927744539878081,
+        "C_max_closed_form_bits": 0.9927744539878083,
+        "abs_deviation_bits": 2.220446049250313e-16,
+        "diameter_bits": 0.9927744539878081
+      },
+      {
+        "k": 2,
+        "p": 0.6,
+        "per_position_H_bits": 0.9709505944546688,
+        "budget_bits": 1.9419011889093376,
+        "H_min_exact_bits": 0.9709505944546688,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 0.9709505944546688,
+        "C_max_closed_form_bits": 0.9709505944546688,
+        "abs_deviation_bits": 0.0,
+        "diameter_bits": 0.9709505944546688
+      },
+      {
+        "k": 2,
+        "p": 0.65,
+        "per_position_H_bits": 0.9340680553754911,
+        "budget_bits": 1.8681361107509822,
+        "H_min_exact_bits": 0.9340680553754913,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 0.9340680553754909,
+        "C_max_closed_form_bits": 0.9340680553754911,
+        "abs_deviation_bits": 2.220446049250313e-16,
+        "diameter_bits": 0.9340680553754909
+      },
+      {
+        "k": 2,
+        "p": 0.7,
+        "per_position_H_bits": 0.8812908992306927,
+        "budget_bits": 1.7625817984613854,
+        "H_min_exact_bits": 0.8812908992306929,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 0.8812908992306925,
+        "C_max_closed_form_bits": 0.8812908992306927,
+        "abs_deviation_bits": 2.220446049250313e-16,
+        "diameter_bits": 0.8812908992306925
+      },
+      {
+        "k": 2,
+        "p": 0.75,
+        "per_position_H_bits": 0.8112781244591328,
+        "budget_bits": 1.6225562489182657,
+        "H_min_exact_bits": 0.8112781244591329,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 0.8112781244591327,
+        "C_max_closed_form_bits": 0.8112781244591328,
+        "abs_deviation_bits": 1.1102230246251565e-16,
+        "diameter_bits": 0.8112781244591327
+      },
+      {
+        "k": 2,
+        "p": 0.8,
+        "per_position_H_bits": 0.7219280948873623,
+        "budget_bits": 1.4438561897747246,
+        "H_min_exact_bits": 0.7219280948873631,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 0.7219280948873615,
+        "C_max_closed_form_bits": 0.7219280948873623,
+        "abs_deviation_bits": 7.771561172376096e-16,
+        "diameter_bits": 0.7219280948873615
+      },
+      {
+        "k": 2,
+        "p": 0.85,
+        "per_position_H_bits": 0.6098403047164005,
+        "budget_bits": 1.219680609432801,
+        "H_min_exact_bits": 0.6098403047164008,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 0.6098403047164002,
+        "C_max_closed_form_bits": 0.6098403047164005,
+        "abs_deviation_bits": 3.3306690738754696e-16,
+        "diameter_bits": 0.6098403047164002
+      },
+      {
+        "k": 2,
+        "p": 0.9,
+        "per_position_H_bits": 0.46899559358928117,
+        "budget_bits": 0.9379911871785623,
+        "H_min_exact_bits": 0.4689955935892812,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 0.4689955935892811,
+        "C_max_closed_form_bits": 0.46899559358928117,
+        "abs_deviation_bits": 5.551115123125783e-17,
+        "diameter_bits": 0.4689955935892811
+      },
+      {
+        "k": 2,
+        "p": 0.95,
+        "per_position_H_bits": 0.2863969571159563,
+        "budget_bits": 0.5727939142319126,
+        "H_min_exact_bits": 0.28639695711595703,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 0.2863969571159556,
+        "C_max_closed_form_bits": 0.2863969571159563,
+        "abs_deviation_bits": 7.216449660063518e-16,
+        "diameter_bits": 0.2863969571159556
+      },
+      {
+        "k": 2,
+        "p": 0.99,
+        "per_position_H_bits": 0.08079313589591124,
+        "budget_bits": 0.16158627179182247,
+        "H_min_exact_bits": 0.08079313589591301,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 0.08079313589590946,
+        "C_max_closed_form_bits": 0.08079313589591124,
+        "abs_deviation_bits": 1.7763568394002505e-15,
+        "diameter_bits": 0.08079313589590946
+      },
+      {
+        "k": 3,
+        "p": 0.5,
+        "per_position_H_bits": 1.0,
+        "budget_bits": 3.0,
+        "H_min_exact_bits": 0.9999999999999999,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 2.0,
+        "C_max_closed_form_bits": 2.0,
+        "abs_deviation_bits": 0.0,
+        "diameter_bits": 2.0
+      },
+      {
+        "k": 3,
+        "p": 0.55,
+        "per_position_H_bits": 0.9927744539878083,
+        "budget_bits": 2.978323361963425,
+        "H_min_exact_bits": 0.9927744539878081,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 1.985548907975617,
+        "C_max_closed_form_bits": 1.9855489079756166,
+        "abs_deviation_bits": 4.440892098500626e-16,
+        "diameter_bits": 1.985548907975617
+      },
+      {
+        "k": 3,
+        "p": 0.6,
+        "per_position_H_bits": 0.9709505944546688,
+        "budget_bits": 2.9128517833640064,
+        "H_min_exact_bits": 0.9709505944546684,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 1.941901188909338,
+        "C_max_closed_form_bits": 1.9419011889093376,
+        "abs_deviation_bits": 4.440892098500626e-16,
+        "diameter_bits": 1.941901188909338
+      },
+      {
+        "k": 3,
+        "p": 0.65,
+        "per_position_H_bits": 0.9340680553754911,
+        "budget_bits": 2.802204166126473,
+        "H_min_exact_bits": 0.9340680553754905,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 1.8681361107509826,
+        "C_max_closed_form_bits": 1.8681361107509822,
+        "abs_deviation_bits": 4.440892098500626e-16,
+        "diameter_bits": 1.8681361107509826
+      },
+      {
+        "k": 3,
+        "p": 0.7,
+        "per_position_H_bits": 0.8812908992306927,
+        "budget_bits": 2.6438726976920783,
+        "H_min_exact_bits": 0.8812908992306924,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 1.7625817984613859,
+        "C_max_closed_form_bits": 1.7625817984613854,
+        "abs_deviation_bits": 4.440892098500626e-16,
+        "diameter_bits": 1.7625817984613859
+      },
+      {
+        "k": 3,
+        "p": 0.75,
+        "per_position_H_bits": 0.8112781244591328,
+        "budget_bits": 2.4338343733773984,
+        "H_min_exact_bits": 0.8112781244591325,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 1.6225562489182659,
+        "C_max_closed_form_bits": 1.6225562489182657,
+        "abs_deviation_bits": 2.220446049250313e-16,
+        "diameter_bits": 1.6225562489182659
+      },
+      {
+        "k": 3,
+        "p": 0.8,
+        "per_position_H_bits": 0.7219280948873623,
+        "budget_bits": 2.165784284662087,
+        "H_min_exact_bits": 0.7219280948873616,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 1.4438561897747255,
+        "C_max_closed_form_bits": 1.4438561897747246,
+        "abs_deviation_bits": 8.881784197001252e-16,
+        "diameter_bits": 1.4438561897747255
+      },
+      {
+        "k": 3,
+        "p": 0.85,
+        "per_position_H_bits": 0.6098403047164005,
+        "budget_bits": 1.8295209141492015,
+        "H_min_exact_bits": 0.6098403047163996,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 1.2196806094328019,
+        "C_max_closed_form_bits": 1.219680609432801,
+        "abs_deviation_bits": 8.881784197001252e-16,
+        "diameter_bits": 1.2196806094328019
+      },
+      {
+        "k": 3,
+        "p": 0.9,
+        "per_position_H_bits": 0.46899559358928117,
+        "budget_bits": 1.4069867807678436,
+        "H_min_exact_bits": 0.46899559358928034,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 0.9379911871785632,
+        "C_max_closed_form_bits": 0.9379911871785623,
+        "abs_deviation_bits": 8.881784197001252e-16,
+        "diameter_bits": 0.9379911871785632
+      },
+      {
+        "k": 3,
+        "p": 0.95,
+        "per_position_H_bits": 0.2863969571159563,
+        "budget_bits": 0.8591908713478689,
+        "H_min_exact_bits": 0.28639695711595536,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 0.5727939142319135,
+        "C_max_closed_form_bits": 0.5727939142319126,
+        "abs_deviation_bits": 8.881784197001252e-16,
+        "diameter_bits": 0.5727939142319135
+      },
+      {
+        "k": 3,
+        "p": 0.99,
+        "per_position_H_bits": 0.08079313589591124,
+        "budget_bits": 0.2423794076877337,
+        "H_min_exact_bits": 0.0807931358959103,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 0.1615862717918234,
+        "C_max_closed_form_bits": 0.16158627179182247,
+        "abs_deviation_bits": 9.159339953157541e-16,
+        "diameter_bits": 0.1615862717918234
+      },
+      {
+        "k": 4,
+        "p": 0.5,
+        "per_position_H_bits": 1.0,
+        "budget_bits": 4.0,
+        "H_min_exact_bits": 1.0000000000000002,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 3.0,
+        "C_max_closed_form_bits": 3.0,
+        "abs_deviation_bits": 0.0,
+        "diameter_bits": 3.0
+      },
+      {
+        "k": 4,
+        "p": 0.55,
+        "per_position_H_bits": 0.9927744539878083,
+        "budget_bits": 3.971097815951233,
+        "H_min_exact_bits": 0.9927744539878085,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 2.9783233619634246,
+        "C_max_closed_form_bits": 2.978323361963425,
+        "abs_deviation_bits": 4.440892098500626e-16,
+        "diameter_bits": 2.9783233619634246
+      },
+      {
+        "k": 4,
+        "p": 0.6,
+        "per_position_H_bits": 0.9709505944546688,
+        "budget_bits": 3.883802377818675,
+        "H_min_exact_bits": 0.9709505944546688,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 2.9128517833640064,
+        "C_max_closed_form_bits": 2.9128517833640064,
+        "abs_deviation_bits": 0.0,
+        "diameter_bits": 2.9128517833640064
+      },
+      {
+        "k": 4,
+        "p": 0.65,
+        "per_position_H_bits": 0.9340680553754911,
+        "budget_bits": 3.7362722215019644,
+        "H_min_exact_bits": 0.9340680553754912,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 2.802204166126473,
+        "C_max_closed_form_bits": 2.802204166126473,
+        "abs_deviation_bits": 0.0,
+        "diameter_bits": 2.802204166126473
+      },
+      {
+        "k": 4,
+        "p": 0.7,
+        "per_position_H_bits": 0.8812908992306927,
+        "budget_bits": 3.525163596922771,
+        "H_min_exact_bits": 0.8812908992306928,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 2.643872697692078,
+        "C_max_closed_form_bits": 2.6438726976920783,
+        "abs_deviation_bits": 4.440892098500626e-16,
+        "diameter_bits": 2.643872697692078
+      },
+      {
+        "k": 4,
+        "p": 0.75,
+        "per_position_H_bits": 0.8112781244591328,
+        "budget_bits": 3.2451124978365313,
+        "H_min_exact_bits": 0.8112781244591332,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 2.4338343733773984,
+        "C_max_closed_form_bits": 2.4338343733773984,
+        "abs_deviation_bits": 0.0,
+        "diameter_bits": 2.4338343733773984
+      },
+      {
+        "k": 4,
+        "p": 0.8,
+        "per_position_H_bits": 0.7219280948873623,
+        "budget_bits": 2.8877123795494493,
+        "H_min_exact_bits": 0.7219280948873626,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 2.1657842846620867,
+        "C_max_closed_form_bits": 2.165784284662087,
+        "abs_deviation_bits": 4.440892098500626e-16,
+        "diameter_bits": 2.1657842846620867
+      },
+      {
+        "k": 4,
+        "p": 0.85,
+        "per_position_H_bits": 0.6098403047164005,
+        "budget_bits": 2.439361218865602,
+        "H_min_exact_bits": 0.6098403047164007,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 1.8295209141492013,
+        "C_max_closed_form_bits": 1.8295209141492015,
+        "abs_deviation_bits": 2.220446049250313e-16,
+        "diameter_bits": 1.8295209141492013
+      },
+      {
+        "k": 4,
+        "p": 0.9,
+        "per_position_H_bits": 0.46899559358928117,
+        "budget_bits": 1.8759823743571247,
+        "H_min_exact_bits": 0.4689955935892814,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 1.4069867807678433,
+        "C_max_closed_form_bits": 1.4069867807678436,
+        "abs_deviation_bits": 2.220446049250313e-16,
+        "diameter_bits": 1.4069867807678433
+      },
+      {
+        "k": 4,
+        "p": 0.95,
+        "per_position_H_bits": 0.2863969571159563,
+        "budget_bits": 1.1455878284638252,
+        "H_min_exact_bits": 0.2863969571159566,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 0.8591908713478686,
+        "C_max_closed_form_bits": 0.8591908713478689,
+        "abs_deviation_bits": 2.220446049250313e-16,
+        "diameter_bits": 0.8591908713478686
+      },
+      {
+        "k": 4,
+        "p": 0.99,
+        "per_position_H_bits": 0.08079313589591124,
+        "budget_bits": 0.32317254358364494,
+        "H_min_exact_bits": 0.0807931358959126,
+        "C_min_bits": 0.0,
+        "C_max_exact_bits": 0.24237940768773236,
+        "C_max_closed_form_bits": 0.2423794076877337,
+        "abs_deviation_bits": 1.3322676295501878e-15,
+        "diameter_bits": 0.24237940768773236
+      }
+    ],
+    "max_abs_deviation_from_closed_form_bits": 1.7763568394002505e-15,
+    "closed_form": "C_max = (k-1) * h(p);  C_min = 0",
+    "n_cases": 33
+  },
+  "fair_bits": {
+    "claim": "for k fair bits the achievable range of C is exactly [0, k-1] bits",
+    "verified_k": [
+      2,
+      3,
+      4
+    ],
+    "C_max_bits": {
+      "2": 0.9999999999999998,
+      "3": 2.0,
+      "4": 3.0
+    },
+    "predicted_bits": {
+      "2": 1.0,
+      "3": 2.0,
+      "4": 3.0
+    },
+    "max_abs_error_bits": 2.220446049250313e-16,
+    "status": "CONFIRMED (and proved: H(P) >= max_i H(q_i) = 1, attained by the perfectly-correlated coupling)"
+  },
+  "argmin_coupling_k4_fair": {
+    "H_min_bits": 1.0000000000000002,
+    "C_max_bits": 3.0,
+    "support": {
+      "0000": 0.4999999999999999,
+      "1111": 0.4999999999999997
+    },
+    "comment": "the minimum-entropy coupling of 4 fair bits is the perfectly-correlated one (all bits equal), H = 1 bit"
+  },
+  "random_coupling_check_k4_fair": {
+    "n_valid": 358,
+    "max_C_seen": 2.5812580971171526,
+    "min_C_seen": 0.17098673143186804,
+    "n_exceeding_C_max": 0
+  },
+  "interval_filling_k4_fair": {
+    "n_steps": 2001,
+    "C_at_t0": 0.0,
+    "C_at_t1": 3.0,
+    "max_consecutive_gap_bits": 0.006741071614364991,
+    "monotone_increasing": true
+  },
+  "unequal_marginals": {
+    "rows": [
+      {
+        "k": 2,
+        "ps": [
+          0.7422552462958117,
+          0.7829450478323527
+        ],
+        "budget_bits": 1.578077425046534,
+        "C_max_exact_bits": 0.5925839434379365,
+        "upper_bound_B_minus_maxH_bits": 0.7547533549201004,
+        "gap_bits": 0.1621694114821639,
+        "attained": false
+      },
+      {
+        "k": 3,
+        "ps": [
+          0.7165624846531031,
+          0.5654369584321888,
+          0.8700703300966228
+        ],
+        "budget_bits": 2.4049470218305764,
+        "C_max_exact_bits": 0.9239072693252701,
+        "upper_bound_B_minus_maxH_bits": 1.4173377631616728,
+        "gap_bits": 0.4934304938364027,
+        "attained": false
+      },
+      {
+        "k": 2,
+        "ps": [
+          0.97813727646274,
+          0.8851651136372434
+        ],
+        "budget_bits": 0.6661045664605847,
+        "C_max_exact_bits": 0.07112964885819406,
+        "upper_bound_B_minus_maxH_bits": 0.15177520851007276,
+        "gap_bits": 0.0806455596518787,
+        "attained": false
+      },
+      {
+        "k": 2,
+        "ps": [
+          0.7507181616121461,
+          0.5040660909362027
+        ],
+        "budget_bits": 1.8100901747999978,
+        "C_max_exact_bits": 0.3142140297553584,
+        "upper_bound_B_minus_maxH_bits": 0.8101378797555938,
+        "gap_bits": 0.4959238500002354,
+        "attained": false
+      },
+      {
+        "k": 2,
+        "ps": [
+          0.7363710572144027,
+          0.7365496927572054
+        ],
+        "budget_bits": 1.6640816976767456,
+        "C_max_exact_bits": 0.829770252816341,
+        "upper_bound_B_minus_maxH_bits": 0.8319084273796009,
+        "gap_bits": 0.0021381745632599314,
+        "attained": false
+      },
+      {
+        "k": 4,
+        "ps": [
+          0.8062125639564419,
+          0.911271568216039,
+          0.6836837594968145,
+          0.8527136269802257
+        ],
+        "budget_bits": 2.6448767828720015,
+        "C_max_exact_bits": 1.228965943422641,
+        "upper_bound_B_minus_maxH_bits": 1.7445463539014654,
+        "gap_bits": 0.5155804104788244,
+        "attained": false
+      },
+      {
+        "k": 4,
+        "ps": [
+          0.8648897102840802,
+          0.9393993015649295,
+          0.8413818227629178,
+          0.6343713909736525
+        ],
+        "budget_bits": 2.4793632141439073,
+        "C_max_exact_bits": 0.9605358544922833,
+        "upper_bound_B_minus_maxH_bits": 1.5321068232870838,
+        "gap_bits": 0.5715709687948005,
+        "attained": false
+      },
+      {
+        "k": 3,
+        "ps": [
+          0.6959335252740912,
+          0.5593863990628613,
+          0.5619244263861004
+        ],
+        "budget_bits": 2.864912099011744,
+        "C_max_exact_bits": 1.4633977084538616,
+        "upper_bound_B_minus_maxH_bits": 1.8751121938544004,
+        "gap_bits": 0.4117144854005388,
+        "attained": false
+      },
+      {
+        "k": 4,
+        "ps": [
+          0.8743376315955784,
+          0.9146314717354986,
+          0.9712156601301001,
+          0.519170947331659
+        ],
+        "budget_bits": 2.1534372439975584,
+        "C_max_exact_bits": 0.607491463896582,
+        "upper_bound_B_minus_maxH_bits": 1.1544979576086272,
+        "gap_bits": 0.5470064937120451,
+        "attained": false
+      },
+      {
+        "k": 3,
+        "ps": [
+          0.9015548046692189,
+          0.868468444707717,
+          0.6301541975417191
+        ],
+        "budget_bits": 1.9762247063604643,
+        "C_max_exact_bits": 0.5713546233489515,
+        "upper_bound_B_minus_maxH_bits": 1.0256710842248657,
+        "gap_bits": 0.45431646087591426,
+        "attained": false
+      },
+      {
+        "k": 4,
+        "ps": [
+          0.9065465360836041,
+          0.8574499750546782,
+          0.6784582892034156,
+          0.8041603741221068
+        ],
+        "budget_bits": 2.6583505471081454,
+        "C_max_exact_bits": 1.255765612577323,
+        "upper_bound_B_minus_maxH_bits": 1.7523004088738703,
+        "gap_bits": 0.4965347962965472,
+        "attained": false
+      },
+      {
+        "k": 2,
+        "ps": [
+          0.9205470639638689,
+          0.6708796713282956
+        ],
+        "budget_bits": 1.3142737282522814,
+        "C_max_exact_bits": 0.13781559243526487,
+        "upper_bound_B_minus_maxH_bits": 0.4002486370972982,
+        "gap_bits": 0.2624330446620333,
+        "attained": false
+      }
+    ],
+    "n_trials": 12,
+    "n_attained": 0,
+    "max_gap_bits": 0.5715709687948005,
+    "conclusion": "C_max <= B - max_i H(q_i) always holds, but is NOT attained in general when the marginals differ; equality is guaranteed only for an equal-marginal profile."
+  },
+  "table_rows": [
+    {
+      "panel": "A",
+      "k": 2,
+      "c": 0.5,
+      "H_bits": 1.0,
+      "budget_bits": 2.0,
+      "C_min": 0.0,
+      "C_max": 0.9999999999999998,
+      "diameter": 0.9999999999999998,
+      "exact": true
+    },
+    {
+      "panel": "A",
+      "k": 3,
+      "c": 0.5,
+      "H_bits": 1.0,
+      "budget_bits": 3.0,
+      "C_min": 0.0,
+      "C_max": 2.0,
+      "diameter": 2.0,
+      "exact": true
+    },
+    {
+      "panel": "A",
+      "k": 4,
+      "c": 0.5,
+      "H_bits": 1.0,
+      "budget_bits": 4.0,
+      "C_min": 0.0,
+      "C_max": 3.0,
+      "diameter": 3.0,
+      "exact": true
+    },
+    {
+      "panel": "B",
+      "k": 4,
+      "c": 0.5,
+      "H_bits": 1.0,
+      "budget_bits": 4.0,
+      "C_min": 0.0,
+      "C_max": 3.0,
+      "diameter": 3.0,
+      "exact": true
+    },
+    {
+      "panel": "B",
+      "k": 4,
+      "c": 0.75,
+      "H_bits": 0.8112781244591328,
+      "budget_bits": 3.2451124978365313,
+      "C_min": 0.0,
+      "C_max": 2.4338343733773984,
+      "diameter": 2.4338343733773984,
+      "exact": true
+    },
+    {
+      "panel": "B",
+      "k": 4,
+      "c": 0.9,
+      "H_bits": 0.46899559358928117,
+      "budget_bits": 1.8759823743571247,
+      "C_min": 0.0,
+      "C_max": 1.4069867807678433,
+      "diameter": 1.4069867807678433,
+      "exact": true
+    },
+    {
+      "panel": "B",
+      "k": 4,
+      "c": 0.95,
+      "H_bits": 0.2863969571159563,
+      "budget_bits": 1.1455878284638252,
+      "C_min": 0.0,
+      "C_max": 0.8591908713478686,
+      "diameter": 0.8591908713478686,
+      "exact": true
+    },
+    {
+      "panel": "B",
+      "k": 4,
+      "c": 0.99,
+      "H_bits": 0.08079313589591124,
+      "budget_bits": 0.32317254358364494,
+      "C_min": 0.0,
+      "C_max": 0.24237940768773236,
+      "diameter": 0.24237940768773236,
+      "exact": true
+    }
+  ],
+  "models": [
+    {
+      "model": "Dream-Coder-7B (base)",
+      "source": "e5v2_dream_base.json",
+      "k": 4,
+      "n_blocks": 247,
+      "median_confidence_min": 0.12743467092514038,
+      "median_budget_bits": 22.536975860595703,
+      "min_budget_bits": 0.46619055792689323,
+      "max_budget_bits": 45.70382022857666,
+      "q1_budget_bits": 10.691697716712952,
+      "q3_budget_bits": 31.805431365966797,
+      "C_max_q1_bits": 8.018773287534714,
+      "C_max_q3_bits": 23.854073524475098,
+      "n_blocks_diameter_ge_1bit": 240,
+      "n_blocks_diameter_gt_0": 247,
+      "median_blockwise_diameter_bits": 16.902731895446777,
+      "certified_upper_bound_bits": 22.536975860595703,
+      "C_max_bits": 16.902731895446777,
+      "C_min_bits": 0.0,
+      "diameter_bits": 16.902731895446777,
+      "binary_profile_C_max_bits": null
+    },
+    {
+      "model": "Dream-Coder-7B (instruct)",
+      "source": "e5v2_dream_instruct.json",
+      "k": 4,
+      "n_blocks": 247,
+      "median_confidence_min": 0.1949174404144287,
+      "median_budget_bits": 15.554061651229858,
+      "min_budget_bits": 0.010855853150133044,
+      "max_budget_bits": 50.83697700500488,
+      "q1_budget_bits": 6.803294837474823,
+      "q3_budget_bits": 32.111138105392456,
+      "C_max_q1_bits": 5.102471128106117,
+      "C_max_q3_bits": 24.083353579044342,
+      "n_blocks_diameter_ge_1bit": 232,
+      "n_blocks_diameter_gt_0": 247,
+      "median_blockwise_diameter_bits": 11.665546238422394,
+      "certified_upper_bound_bits": 15.554061651229858,
+      "C_max_bits": 11.665546238422394,
+      "C_min_bits": 0.0,
+      "diameter_bits": 11.665546238422394,
+      "binary_profile_C_max_bits": null
+    },
+    {
+      "model": "DiffusionGemma-26B-A4B",
+      "source": "e5v2_diffusiongemma.json",
+      "k": 4,
+      "n_blocks": 259,
+      "median_confidence_min": 0.11051873862743378,
+      "median_budget_bits": 30.825259685516357,
+      "min_budget_bits": 20.793095588684082,
+      "max_budget_bits": 39.70182991027832,
+      "q1_budget_bits": 29.219144582748413,
+      "q3_budget_bits": 32.11710524559021,
+      "C_max_q1_bits": 21.91435843706131,
+      "C_max_q3_bits": 24.087828934192657,
+      "n_blocks_diameter_ge_1bit": 259,
+      "n_blocks_diameter_gt_0": 259,
+      "median_blockwise_diameter_bits": 23.118944764137268,
+      "certified_upper_bound_bits": 30.825259685516357,
+      "C_max_bits": 23.118944764137268,
+      "C_min_bits": 0.0,
+      "diameter_bits": 23.118944764137268,
+      "binary_profile_C_max_bits": null
+    }
+  ],
+  "meta": {
+    "units": "bits (log base 2)",
+    "k_table": 4,
+    "confidence_grid": [
+      0.5,
+      0.75,
+      0.9,
+      0.95,
+      0.99
+    ],
+    "p_grid_exact": [
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75,
+      0.8,
+      0.85,
+      0.9,
+      0.95,
+      0.99
+    ],
+    "notes": [
+      "C_min = 0 on every fibre: the product measure realises it exactly.",
+      "The achievable set is the full interval [0, C_max] (C continuous on a convex, hence connected, polytope).",
+      "C_max = B - (min-entropy coupling); for an equal-marginal profile C_max = (k-1) H(q) exactly.",
+      "For k fair bits C_max = k-1 bits exactly: PROVED and verified for k=2,3,4.",
+      "For unequal marginals B - max_i H(q_i) is an upper bound on C_max but is generally NOT attained."
+    ]
+  }
+}

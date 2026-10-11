@@ -1,0 +1,38 @@
+\begin{table}[!ht]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\caption{\textbf{Both terms of \eqref{eq:orderinfo}, measured on a subset.} Medians over
+probed blocks, in bits, on a second GPU (NVIDIA GB10, same checkpoints and blocks as the
+main run). Per model and regime the probe takes $24$ blocks the main run flagged as
+outside $[0,W]$, where there are that many, and $16$ random others.
+$\widehat{\mathrm{C}}$ is the order-averaged estimate with $B$ from the estimator's own first
+forward pass. \emph{KL} is $\mathbb{E}_\pi\mathrm{KL}(q_\pi\,\|\,\prod_i p_i)$, estimated
+from the same samples by scoring them under the parallel marginals. $I$ is the order
+information $I(\pi;Y_S)$, from all $4!$ orders evaluated at $32$ sampled assignments per
+block. \emph{KL$-I$} is the cost relative to a random-order sampler. Where the
+conditionals compose the four columns agree. The last three columns use the random blocks
+only (cells with at least $3$), which the text quotes: their number, the median of
+KL$-\widehat{\mathrm{C}}$, and the median $I$.}
+\label{tab:probe}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+ & \multicolumn{5}{c}{all probed blocks} & \multicolumn{3}{c}{random blocks only} \\
+\cmidrule(lr){2-6}\cmidrule(lr){7-9}
+Model / regime / domain & $n$ & $\widehat{\mathrm{C}}$ & KL & $I(\pi;Y_S)$ & KL$-I$ & $n$ & KL$-\widehat{\mathrm{C}}$ & $I$ \\
+\midrule
+Dream base / infill / prose & $12$ & $+0.55$ & $+1.24$ & $0.06$ & $+1.03$ & $10$ & $+0.52$ & $0.06$ \\
+Dream base / infill / code & $28$ & $+0.00$ & $+0.11$ & $0.01$ & $-0.02$ & $6$ & $-0.04$ & $0.00$ \\
+Dream base / suffix / prose & $9$ & $+7.60$ & $+9.14$ & $0.98$ & $+7.75$ & $9$ & $+1.01$ & $0.98$ \\
+Dream base / suffix / code & $11$ & $+1.91$ & $+1.35$ & $0.23$ & $+1.13$ & $7$ & $+0.41$ & $0.38$ \\
+Dream instr. / infill / prose & $18$ & $+0.14$ & $+5.87$ & $0.88$ & $+5.05$ & $12$ & $+4.45$ & $0.97$ \\
+Dream instr. / infill / code & $22$ & $-0.00$ & $+0.01$ & $0.01$ & $-0.00$ & $4$ & $+1.47$ & $0.16$ \\
+Dream instr. / suffix / prose & $11$ & $-0.72$ & $+8.44$ & $1.10$ & $+6.95$ & $6$ & $+5.56$ & $0.84$ \\
+Dream instr. / suffix / code & $29$ & $+1.18$ & $+1.42$ & $0.14$ & $+1.28$ & $10$ & $+0.18$ & $0.16$ \\
+LLaDA base / infill / prose & $15$ & $+1.99$ & $+2.40$ & $0.18$ & $+2.06$ & $13$ & $+0.47$ & $0.28$ \\
+LLaDA base / infill / code & $25$ & $-0.00$ & $-0.00$ & $0.00$ & $-0.02$ & $3$ & $-0.31$ & $0.01$ \\
+LLaDA base / suffix / prose & $11$ & $+6.77$ & $+7.91$ & $0.37$ & $+7.77$ & $10$ & $+1.09$ & $0.39$ \\
+LLaDA base / suffix / code & $6$ & $+3.67$ & $+3.88$ & $0.15$ & $+3.96$ & $6$ & $+1.15$ & $0.15$ \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,22 @@
+\begin{table}[!ht]
+\centering
+\small
+\caption{\textbf{What fixing the marginals leaves undetermined.} Since $H(Y_S\given c)\ge 0$, Eq.~\eqref{eq:tc} certifies $\mathrm{C}\le B:=\sum_{i\in S}H(Y_i\given c)$, which is exactly minus the \texttt{neg\_entropy\_sum} proxy. Marginal rules bound $\mathrm{C}$, they do not locate it. The fibre of joints with these marginals is convex, so $\mathrm{C}$ attains every value in $[\mathrm{C}_{\min},\mathrm{C}_{\max}]$: the product measure gives $\mathrm{C}_{\min}=0$, and a minimum-entropy coupling gives $\mathrm{C}_{\max}=B-\min_P H(P)$, which for equal marginals is $(k-1)H(Y_1)$, so $k$ fair bits span exactly $[0,k-1]$ bits (rows (a), by exact vertex enumeration). Every entry is a statement about the whole fibre of joints compatible with a marginal profile, so it bounds what the marginals fail to say and not what any particular trained model does. What a real checkpoint actually does is measured in \S\ref{sec:explains}.}\label{tab:nontightness}
+\begin{tabular}{lrrrrr}
+\toprule
+Marginal profile & $k$ & $B=\sum_i H(Y_i)$ & $\mathrm{C}_{\min}$ & $\mathrm{C}_{\max}$ & diameter \\
+\midrule
+\multicolumn{6}{l}{\emph{(a) fair bits: exact vertex enumeration of the fibre}} \\
+2 fair bits ($c=0.5$) & 2 & 2.000 & 0.000 & 1.000 & 1.000 \\
+3 fair bits ($c=0.5$) & 3 & 3.000 & 0.000 & 2.000 & 2.000 \\
+4 fair bits ($c=0.5$) & 4 & 4.000 & 0.000 & 3.000 & 3.000 \\
+\midrule
+\multicolumn{6}{l}{\emph{(b) $k=4$, every position Bernoulli($c$) at confidence $c$}} \\
+$c=0.5$ & 4 & 4.000 & 0.000 & 3.000 & 3.000 \\
+$c=0.75$ & 4 & 3.245 & 0.000 & 2.434 & 2.434 \\
+$c=0.9$ & 4 & 1.876 & 0.000 & 1.407 & 1.407 \\
+$c=0.95$ & 4 & 1.146 & 0.000 & 0.859 & 0.859 \\
+$c=0.99$ & 4 & 0.323 & 0.000 & 0.242 & 0.242 \\
+\bottomrule
+\end{tabular}
+\end{table}

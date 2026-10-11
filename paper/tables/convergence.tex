@@ -1,0 +1,38 @@
+\begin{table}[!ht]
+\centering
+\small
+\setlength{\tabcolsep}{5pt}
+\caption{\textbf{The meter converges as $1/\sqrt{M}$.} Per-block standard error of
+$\Chat_M$ against the number of sampled reveal orders $M$, on a fixed block set per
+checkpoint. Each smaller $M$ uses the first $M$ of the same $256$ orders, so the deviation from
+$\Chat_{256}$ in the last columns understates the error of an independent run of size
+$M$, by a factor of $\sqrt{256/(256-M)}$. The last
+three columns give the mean and maximum absolute deviation of $\Chat_M$ from
+$\Chat_{256}$ on the same blocks, and the forward-pass cost per block. The main runs use
+$M{=}64$, the row where the deviation from a $4\times$ larger budget is already a
+fraction of the residuals reported in Table~\ref{tab:explains}.}
+\label{tab:meter}
+\begin{tabular}{rrrrrr}
+\toprule
+$M$ & s.e.\ (bits) & s.e.$\times\sqrt{M}$ & mean $|\Chat_M-\Chat_{256}|$ & max & fwd/block \\
+\midrule
+\multicolumn{6}{l}{\emph{Dream base, deployed regime, $n=48$ blocks, $k=4$}} \\
+$4$ & $2.821$ & $5.64$ & $2.00$ & $10.65$ & $16$ \\
+$8$ & $1.856$ & $5.25$ & $1.34$ & $4.05$ & $32$ \\
+$16$ & $1.323$ & $5.29$ & $1.05$ & $3.82$ & $64$ \\
+$32$ & $0.882$ & $4.99$ & $0.67$ & $1.67$ & $128$ \\
+$64$ & $0.671$ & $5.36$ & $0.39$ & $1.45$ & $256$ \\
+$128$ & $0.479$ & $5.42$ & $0.22$ & $0.57$ & $512$ \\
+$256$ & $0.348$ & $5.56$ & $0$ & $0$ & $1024$ \\
+\midrule
+\multicolumn{6}{l}{\emph{LLaDA base, deployed regime, $n=48$ blocks, $k=4$}} \\
+$4$ & $1.551$ & $3.10$ & $1.25$ & $7.63$ & $16$ \\
+$8$ & $1.121$ & $3.17$ & $0.98$ & $4.46$ & $32$ \\
+$16$ & $0.783$ & $3.13$ & $0.50$ & $2.09$ & $64$ \\
+$32$ & $0.586$ & $3.31$ & $0.44$ & $1.49$ & $128$ \\
+$64$ & $0.432$ & $3.45$ & $0.31$ & $1.15$ & $256$ \\
+$128$ & $0.302$ & $3.41$ & $0.14$ & $0.64$ & $512$ \\
+$256$ & $0.208$ & $3.33$ & $0$ & $0$ & $1024$ \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,27 @@
+{
+ "model": "llada_instruct",
+ "device": "NVIDIA GB10",
+ "n_windows": 16,
+ "passed": true,
+ "seconds": 369.0,
+ "determinism": {
+  "repeat_call_max_abs_logprob_diff": 0.0,
+  "batch1_vs_batchN_max_abs_logprob_diff": 0.0,
+  "repeat_call_argmax_flips": 0,
+  "batch_size_argmax_flips": 0,
+  "n_positions_compared": 64,
+  "n_positions_compared_alone_vs_batch": 64,
+  "batch1_vs_batchN_max_abs_entropy_diff_bits": 0.0,
+  "n_canvases_entropy_check": 32,
+  "estimator_batch_shapes": [
+   8,
+   64
+  ],
+  "estimator_batch_rms_dB_bits": 0.0,
+  "estimator_batch_argmax_flips": 0,
+  "estimator_batch_max_abs_dB_bits": 0.0,
+  "estimator_batch_max_abs_dH_bits": 0.0,
+  "entropy_rms_tol_bits": 0.074,
+  "tolerance": 0.0
+ }
+}

@@ -1,0 +1,95 @@
+{
+ "summary": {
+  "n_folds_outer": 5,
+  "n_folds_inner": 5,
+  "n_candidates": 40,
+  "max_delta_bits": 0.03453499234257085,
+  "min_delta_bits": -0.0016276064098468268,
+  "nested_residual_range_bits": [
+   0.7425445159468823,
+   1.845035466371348
+  ]
+ },
+ "by_setting": {
+  "dream_base/infill": {
+   "n": 494,
+   "residual_sd_bits": 1.132274193597797,
+   "r2_true": 0.7473276869024819,
+   "selected_most_often": "profile_plus_scalars/ridge100",
+   "n_distinct_selections": 2,
+   "reported_residual_sd_bits": 1.1287835468069969,
+   "delta_bits": 0.0034906467908000227,
+   "reported_r2_true": 0.7488831939991467
+  },
+  "dream_base/suffix": {
+   "n": 247,
+   "residual_sd_bits": 1.0951912956155956,
+   "r2_true": 0.8463588830945197,
+   "selected_most_often": "per_position_conf_entropy/ridge1",
+   "n_distinct_selections": 2,
+   "reported_residual_sd_bits": 1.0904146595716824,
+   "delta_bits": 0.004776636043913207,
+   "reported_r2_true": 0.8476961604959049
+  },
+  "dream_instruct/infill": {
+   "n": 494,
+   "residual_sd_bits": 1.6334004069063213,
+   "r2_true": 0.25473824050936456,
+   "selected_most_often": "per_position_conf_entropy/ridge10",
+   "n_distinct_selections": 3,
+   "reported_residual_sd_bits": 1.6234902884212101,
+   "delta_bits": 0.009910118485111141,
+   "reported_r2_true": 0.2637540670796843
+  },
+  "dream_instruct/suffix": {
+   "n": 247,
+   "residual_sd_bits": 1.845035466371348,
+   "r2_true": 0.39305184993663334,
+   "selected_most_often": "per_position_conf_entropy/ridge1",
+   "n_distinct_selections": 2,
+   "reported_residual_sd_bits": 1.8399295499395243,
+   "delta_bits": 0.005105916431823676,
+   "reported_r2_true": 0.3964065154649917
+  },
+  "llada_base/infill": {
+   "n": 516,
+   "residual_sd_bits": 0.7425445159468823,
+   "r2_true": 0.9023905375791361,
+   "selected_most_often": "per_position_conf_entropy/ridge10",
+   "n_distinct_selections": 1,
+   "reported_residual_sd_bits": 0.7423959186887211,
+   "delta_bits": 0.00014859725816118718,
+   "reported_r2_true": 0.9024296006840734
+  },
+  "llada_base/suffix": {
+   "n": 258,
+   "residual_sd_bits": 1.0716569210554483,
+   "r2_true": 0.8906915917002369,
+   "selected_most_often": "profile_plus_scalars/ridge10",
+   "n_distinct_selections": 3,
+   "reported_residual_sd_bits": 1.0547533739951653,
+   "delta_bits": 0.016903547060282964,
+   "reported_r2_true": 0.8941127009048205
+  },
+  "llada_instruct/infill": {
+   "n": 516,
+   "residual_sd_bits": 0.9075796413528169,
+   "r2_true": 0.8419424119605111,
+   "selected_most_often": "per_position_conf_entropy/knn10",
+   "n_distinct_selections": 4,
+   "reported_residual_sd_bits": 0.873044649010246,
+   "delta_bits": 0.03453499234257085,
+   "reported_r2_true": 0.8537422899636796
+  },
+  "llada_instruct/suffix": {
+   "n": 258,
+   "residual_sd_bits": 1.1724322646874201,
+   "r2_true": 0.8593895745145431,
+   "selected_most_often": "per_position_conf_entropy/ridge10",
+   "n_distinct_selections": 2,
+   "reported_residual_sd_bits": 1.174059871097267,
+   "delta_bits": -0.0016276064098468268,
+   "reported_r2_true": 0.8589989041264053
+  }
+ }
+}

@@ -1,0 +1,32 @@
+\begin{table}[!ht]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\caption{\textbf{Controls.} \emph{chain-rule dev.}: spread over reveal orders of the
+chain-rule log-probability at a fixed assignment, exactly zero for conditionals that
+compose into one joint \cite{chainruledev}. \emph{cond.\ sens.}: mean total-variation
+distance between $p(Y_j\given c)$ and $p(Y_j\given y_i,c)$. A model that ignores what
+has been filled in sits near zero, would trivially score as ``consistent'', and would
+trivially have $\mathrm{C}=0$, so this separates a genuinely composable joint from a
+degenerate one. \emph{distinct $y$}: number of distinct greedy assignments obtained
+under $8$ different reveal orders, out of $8$. When this exceeds one, the sequential
+``reference'' decode against which parallel-commit error is usually measured is itself
+order-dependent, and \emph{pairwise dis.} reports how far apart those references are.
+\emph{inv.\ ok}: fraction of blocks satisfying the structural invariant that the first
+sequentially decoded position, drawn from the same distribution as the parallel commit,
+agrees with it. Anything below $100$ is nondeterminism in the forward pass.}\label{tab:controls}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+Model / regime & med.\ conf. & $B$ & $\widehat{\mathrm{C}}$ & chain-rule dev. & cond.\ sens. & distinct $y$ & pairwise dis. & inv.\ ok \% \\
+\midrule
+Dream base / infill & $0.538$ & $4.2$ & $0.78$ & $0.18$ & $0.080$ & $1.0$ & $0.00$ & $100.0$ \\
+Dream base / suffix & $0.159$ & $17.3$ & $5.06$ & $0.42$ & $0.358$ & $2.0$ & $0.29$ & $100.0$ \\
+Dream instr. / infill & $0.575$ & $4.3$ & $0.05$ & $0.20$ & $0.068$ & $1.0$ & $0.00$ & $100.0$ \\
+Dream instr. / suffix & $0.262$ & $11.7$ & $2.24$ & $0.59$ & $0.311$ & $2.0$ & $0.31$ & $100.0$ \\
+LLaDA base / infill & $0.565$ & $3.6$ & $0.68$ & $0.11$ & $0.050$ & $1.0$ & $0.00$ & $100.0$ \\
+LLaDA base / suffix & $0.177$ & $16.6$ & $5.50$ & $0.28$ & $0.366$ & $2.0$ & $0.21$ & $100.0$ \\
+LLaDA instr. / infill & $0.597$ & $3.5$ & $0.55$ & $0.10$ & $0.049$ & $1.0$ & $0.00$ & $100.0$ \\
+LLaDA instr. / suffix & $0.205$ & $14.8$ & $5.03$ & $0.37$ & $0.352$ & $2.0$ & $0.21$ & $100.0$ \\
+\bottomrule
+\end{tabular}
+\end{table}

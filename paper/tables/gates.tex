@@ -1,0 +1,33 @@
+\begin{table}[!ht]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\caption{\textbf{The readout convention is measured, not assumed.} We mask a $k{=}4$
+block and score the log-probability the model gives the tokens that were actually there,
+reading at index $p{+}\delta$. The true tokens are hidden, so a bidirectional model
+cannot score well by copying, and only the correct convention wins. The gate recovers
+each checkpoint's documented convention without being told it, and the two families are
+\emph{opposite}: Dream keeps the autoregressive shift of the backbone it was initialised
+from, LLaDA predicts masked tokens in place. The two Dream rows are the Dream-Coder
+checkpoints \cite{dreamcoder}, adapted from an autoregressive backbone by the recipe of
+\cite{dream}, and the gate finds they keep its shift. ``gap'' is the winning $\delta$'s margin
+over the runner-up in bits, at $k{=}4$ (the block size of the three columns before it)
+and with one hidden token ($k{=}1$). The gate requires both to exceed one bit. ``flips'' counts argmax changes
+between two identical forward calls. Any nonzero value would be a noise floor that
+correlates with confidence and therefore contaminates a proxy audit. Reading Dream at
+$\delta{=}0$, the convention our own earlier version used, costs
+$6.9$ bits of log-probability on the correct token at $k{=}1$ and $8.4$ at $k{=}4$, a
+factor of ${\sim}120$ or more in probability (\S\ref{sec:bugimpact}).}\label{tab:gates}
+\begin{tabular}{lccrrrrccc}
+\toprule
+ & \multicolumn{2}{c}{readout offset} & \multicolumn{3}{c}{$\log_2 p(\text{hidden true token})$ read at $p{+}\delta$} & \multicolumn{2}{c}{gap (bits)} & & \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-6}\cmidrule(lr){7-8}
+Model & measured & documented & $\delta{=}{-}1$ & $\delta{=}0$ & $\delta{=}{+}1$ & $k{=}4$ & $k{=}1$ & flips & gates \\
+\midrule
+Dream-Coder-7B (base) & $-1$ & $-1$ (AR shift) & $-2.47$ & $-10.87$ & $-15.24$ & $8.4$ & $6.9$ & 0 & \checkmark \\
+Dream-Coder-7B (instruct) & $-1$ & $-1$ (AR shift) & $-3.44$ & $-12.55$ & $-16.80$ & $9.1$ & $8.4$ & 0 & \checkmark \\
+LLaDA-8B (base) & $0$ & $0$ (in place) & $-13.19$ & $-2.13$ & $-13.15$ & $11.0$ & $16.0$ & 0 & \checkmark \\
+LLaDA-8B (instruct) & $0$ & $0$ (in place) & $-13.03$ & $-2.34$ & $-12.97$ & $10.6$ & $14.7$ & 0 & \checkmark \\
+\bottomrule
+\end{tabular}
+\end{table}

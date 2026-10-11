@@ -1,0 +1,26 @@
+\begin{table}[!ht]
+\centering
+\small
+\setlength{\tabcolsep}{4.5pt}
+\caption{\textbf{The estimator budget does not carry the headline.} Quadrupling the
+number of reveal orders from $M{=}64$ to $M{=}256$ on
+the \emph{same} blocks. The per-block standard error halves, as $1/\sqrt{M}$ predicts,
+and the reported residual moves by at most $0.034$ bits. Note this is a different
+experiment from Table~\ref{tab:meter}, which traces the convergence curve on a smaller
+fixed set of $48$ blocks, so the standard errors are not directly comparable between the
+two tables. \emph{rank agr.}: Spearman correlation between the two estimates of
+$\mathrm{C}$ across blocks, i.e.\ whether the two budgets order the blocks the same way.
+The two runs also differ in batch composition, $8$ blocks per batch at $M{=}64$ and $4$ at
+$M{=}256$, so this tests the budget and the batch shape together.}
+\label{tab:msens}
+\begin{tabular}{lrrrrrrr}
+\toprule
+ & & \multicolumn{2}{c}{meter s.e.\ (bits)} & \multicolumn{2}{c}{residual (bits)} & & \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}
+Model / regime & $n$ & $M{=}64$ & $M{=}256$ & $M{=}64$ & $M{=}256$ & $|\Delta|$ & rank agr. \\
+\midrule
+LLaDA base / suffix & $258$ & $0.335$ & $0.168$ & $1.055$ & $1.088$ & $0.034$ & $0.991$ \\
+LLaDA base / infill & $516$ & $0.072$ & $0.040$ & $0.742$ & $0.732$ & $0.010$ & $0.988$ \\
+\bottomrule
+\end{tabular}
+\end{table}

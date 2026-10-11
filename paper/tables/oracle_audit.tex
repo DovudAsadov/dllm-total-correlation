@@ -1,0 +1,16 @@
+\begin{table}[!ht]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{\textbf{The exact audit.} Six marginal rules scored against analytic $\mathrm{C}$ on all $355$ candidate sets from \textsc{replace\_random} and \textsc{shuffle}, of which $34$ have $\mathrm{C}=0$. The rules collapse to $4$ distinct rankings, so one row is shown per ranking. The perfect safe-set AUROC is an identity, not a finding: here $\mathrm{C}=0$ \emph{if and only if} the summed marginal entropy is $0$ (all $34$ at $0$ bits, all $321$ others at $\geq 1.62$), so any certainty detector scores $1.000$ while measuring no dependency. \emph{gap} is the matched-marginal score difference, exactly $0$ while $\mathrm{C}$ differs by $1.42$ bits. Comparisons use a paired bootstrap of the \emph{difference} in Spearman on the same sets: margin beats confidence by $0.394$ $[0.296,\, 0.494]$. \S\ref{sec:fidelity} finds this reverses on the four checkpoints.}\label{tab:proxy}
+\begin{tabular}{lrrrr}
+\toprule
+Rule & Spearman$(\cdot,\mathrm{C})$ [95\% CI] & Kendall & AUROC$_{\mathrm{safe}}$ & gap \\
+\midrule
+confidence (min), neg-entropy (max) & $-0.203\ [-0.345,\, -0.055]$ & $-0.104$ & $1.0000$ & $0$ \\
+confidence (mean) & $-0.201\ [-0.344,\, -0.054]$ & $-0.103$ & $1.0000$ & $0$ \\
+margin (min/mean) & $-0.596\ [-0.683,\, -0.499]$ & $-0.539$ & $1.0000$ & $0$ \\
+neg-entropy (sum) & $-0.335\ [-0.471,\, -0.185]$ & $-0.198$ & $1.0000$ & $0$ \\
+\bottomrule
+\end{tabular}
+\end{table}

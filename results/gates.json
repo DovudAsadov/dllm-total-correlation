@@ -1,0 +1,178 @@
+{
+ "config": {
+  "window": 128,
+  "k": 4,
+  "n_probe": 96,
+  "corpus": "corpus.jsonl"
+ },
+ "models": {
+  "dream_base": {
+   "repo": "Dream-org/Dream-Coder-v0-Base-7B",
+   "model_tag": "dream_base",
+   "model_path": "<HF_HUB>/models--Dream-org--Dream-Coder-v0-Base-7B/snapshots/2346ccd3be517d0d314152b988a3b9bafa7d6d63",
+   "loaded_via": "AutoModel",
+   "torch_dtype": "bfloat16",
+   "transformers_version": "4.46.2",
+   "mask_id": 151666,
+   "vocab_size": 152064,
+   "offset": -1,
+   "offset_evidence": {
+    "mean_log2_prob_of_hidden_true_token_by_delta": {
+     "k=1": {
+      "-1": -0.840308541741989,
+      "0": -7.764295746926024,
+      "1": -18.73499888585036
+     },
+     "k=4": {
+      "-1": -2.465651825738537,
+      "0": -10.87471391510521,
+      "1": -15.239680899064453
+     }
+    },
+    "winner_per_k": [
+     -1,
+     -1
+    ],
+    "agree_across_k": true,
+    "min_gap_bits_over_runner_up": 6.9239872051840345,
+    "min_gap_required": 1.0,
+    "n_probe_windows": 96,
+    "probe": "mask the block, score the hidden true tokens; copying impossible",
+    "gate_seconds": 6.9
+   },
+   "determinism": {
+    "repeat_call_max_abs_logprob_diff": 0.0,
+    "batch1_vs_batchN_max_abs_logprob_diff": 0.1623086929321289,
+    "repeat_call_argmax_flips": 0,
+    "batch_size_argmax_flips": 0,
+    "n_positions_compared": 32,
+    "tolerance": 0.0
+   },
+   "batch_invariance": {
+    "max_abs_logprob_diff": 0.1623086929321289,
+    "argmax_flips": 0
+   },
+   "fluency_sample": " Theatre . In 2002 , he appeared in the film The Last King of Scotland . In 2003 , he appeared in the film",
+   "gates_passed": {
+    "offset": true,
+    "determinism": true,
+    "fluency": true
+   },
+   "expected_offset_from_docs": -1,
+   "measured_matches_docs": true,
+   "seconds": 22.7
+  },
+  "dream_instruct": {
+   "repo": "Dream-org/Dream-Coder-v0-Instruct-7B",
+   "model_tag": "dream_instruct",
+   "model_path": "<HF_HUB>/models--Dream-org--Dream-Coder-v0-Instruct-7B/snapshots/5d9e88c723af9045f362748b5284bdf43d9c501e",
+   "loaded_via": "AutoModel",
+   "torch_dtype": "bfloat16",
+   "transformers_version": "4.46.2",
+   "mask_id": 151666,
+   "vocab_size": 152064,
+   "offset": -1,
+   "offset_evidence": {
+    "mean_log2_prob_of_hidden_true_token_by_delta": {
+     "k=1": {
+      "-1": -1.4086793762361356,
+      "0": -9.856079415849974,
+      "1": -19.360120578911342
+     },
+     "k=4": {
+      "-1": -3.443917087306023,
+      "0": -12.54895828775878,
+      "1": -16.802632495043593
+     }
+    },
+    "winner_per_k": [
+     -1,
+     -1
+    ],
+    "agree_across_k": true,
+    "min_gap_bits_over_runner_up": 8.44740003961384,
+    "min_gap_required": 1.0,
+    "n_probe_windows": 96,
+    "probe": "mask the block, score the hidden true tokens; copying impossible",
+    "gate_seconds": 6.3
+   },
+   "determinism": {
+    "repeat_call_max_abs_logprob_diff": 0.0,
+    "batch1_vs_batchN_max_abs_logprob_diff": 0.5561351776123047,
+    "repeat_call_argmax_flips": 0,
+    "batch_size_argmax_flips": 0,
+    "n_positions_compared": 32,
+    "tolerance": 0.0
+   },
+   "batch_invariance": {
+    "max_abs_logprob_diff": 0.5561351776123047,
+    "argmax_flips": 0
+   },
+   "fluency_sample": " Theatre . He also appeared in the film The Last King of Scotland in 2006 . He has since appeared in several other film and TV projects .",
+   "gates_passed": {
+    "offset": true,
+    "determinism": true,
+    "fluency": true
+   },
+   "expected_offset_from_docs": -1,
+   "measured_matches_docs": true,
+   "seconds": 13.8
+  },
+  "llada_base": {
+   "repo": "GSAI-ML/LLaDA-8B-Base",
+   "model_tag": "llada_base",
+   "model_path": "<HF_HUB>/models--GSAI-ML--LLaDA-8B-Base/snapshots/0f2787f2d87eac5eed8a087d5ecd24277e6255b2",
+   "loaded_via": "AutoModel",
+   "torch_dtype": "bfloat16",
+   "transformers_version": "4.46.2",
+   "mask_id": 126336,
+   "vocab_size": 126464,
+   "offset": 0,
+   "offset_evidence": {
+    "mean_log2_prob_of_hidden_true_token_by_delta": {
+     "k=1": {
+      "-1": -16.613538885353115,
+      "0": -0.661109650856513,
+      "1": -18.17917521693894
+     },
+     "k=4": {
+      "-1": -13.192337713837134,
+      "0": -2.134770522592896,
+      "1": -13.147302686224833
+     }
+    },
+    "winner_per_k": [
+     0,
+     0
+    ],
+    "agree_across_k": true,
+    "min_gap_bits_over_runner_up": 11.012532163631937,
+    "min_gap_required": 1.0,
+    "n_probe_windows": 96,
+    "probe": "mask the block, score the hidden true tokens; copying impossible",
+    "gate_seconds": 7.4
+   },
+   "determinism": {
+    "repeat_call_max_abs_logprob_diff": 0.0,
+    "batch1_vs_batchN_max_abs_logprob_diff": 0.281494140625,
+    "repeat_call_argmax_flips": 0,
+    "batch_size_argmax_flips": 0,
+    "n_positions_compared": 32,
+    "tolerance": 0.0
+   },
+   "batch_invariance": {
+    "max_abs_logprob_diff": 0.281494140625,
+    "argmax_flips": 0
+   },
+   "fluency_sample": " Theatre . He has also appeared in the films The Last of the Mohicans and The Last of the Mohicans 2 . He has also appeared in the television",
+   "gates_passed": {
+    "offset": true,
+    "determinism": true,
+    "fluency": true
+   },
+   "expected_offset_from_docs": 0,
+   "measured_matches_docs": true,
+   "seconds": 13.7
+  }
+ }
+}

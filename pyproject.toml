@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tcaudit"
+version = "0.1.0"
+description = "Auditing commit-set selection proxies in diffusion LLMs against ground-truth total correlation"
+requires-python = ">=3.10"
+dependencies = ["numpy"]
+
+[tool.setuptools.packages.find]
+include = ["tcaudit*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

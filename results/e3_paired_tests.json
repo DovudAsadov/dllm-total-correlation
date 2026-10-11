@@ -1,0 +1,53 @@
+{
+ "n": 355,
+ "spearman": {
+  "confidence_min": -0.20264777796379502,
+  "confidence_mean": -0.20127610665386717,
+  "margin_min": -0.5964666042712623,
+  "margin_mean": -0.5964666042712623,
+  "neg_entropy_max": -0.20264777796379502,
+  "neg_entropy_sum": -0.3351499266179244
+ },
+ "kendall": {
+  "confidence_min": -0.10380875283328575,
+  "confidence_mean": -0.10272469087827209,
+  "margin_min": -0.539342985126296,
+  "margin_mean": -0.539342985126296,
+  "neg_entropy_max": -0.10380875283328575,
+  "neg_entropy_sum": -0.19840524349260025
+ },
+ "paired_differences": {
+  "margin_min__minus__confidence_min": {
+   "diff": -0.3938188263074673,
+   "ci95": [
+    -0.49372543088880744,
+    -0.2963086503040901
+   ],
+   "significant": true
+  },
+  "margin_min__minus__neg_entropy_sum": {
+   "diff": -0.2613166776533379,
+   "ci95": [
+    -0.38674945478014544,
+    -0.1465518196859148
+   ],
+   "significant": true
+  },
+  "neg_entropy_sum__minus__confidence_min": {
+   "diff": -0.1325021486541294,
+   "ci95": [
+    -0.19211775005616097,
+    -0.07188753693276556
+   ],
+   "significant": true
+  },
+  "margin_min__minus__confidence_mean": {
+   "diff": -0.3951904976173951,
+   "ci95": [
+    -0.4952080386367343,
+    -0.2976871487033303
+   ],
+   "significant": true
+  }
+ }
+}

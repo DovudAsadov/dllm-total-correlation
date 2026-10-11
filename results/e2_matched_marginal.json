@@ -1,0 +1,64 @@
+{
+  "n4": {
+    "n": 4,
+    "C_free": 0.0,
+    "C_constrained": 1.4150374992788444,
+    "max_marginal_gap": 0.0,
+    "proxy_free": {
+      "confidence_min": 0.5,
+      "confidence_mean": 0.5,
+      "margin_min": 0.0,
+      "margin_mean": 0.0,
+      "neg_entropy_max": -1.0,
+      "neg_entropy_sum": -4.0
+    },
+    "proxy_constrained": {
+      "confidence_min": 0.5,
+      "confidence_mean": 0.5,
+      "margin_min": 0.0,
+      "margin_mean": 0.0,
+      "neg_entropy_max": -1.0,
+      "neg_entropy_sum": -4.0
+    },
+    "proxy_gap": {
+      "confidence_min": 0.0,
+      "confidence_mean": 0.0,
+      "margin_min": 0.0,
+      "margin_mean": 0.0,
+      "neg_entropy_max": 0.0,
+      "neg_entropy_sum": 0.0
+    },
+    "verdict": "All marginal proxies identical across the pair (max gap 0.00e+00) while C differs by 1.4150 bits."
+  },
+  "n6": {
+    "n": 6,
+    "C_free": 0.0,
+    "C_constrained": 1.6780719051126365,
+    "max_marginal_gap": 5.551115123125783e-17,
+    "proxy_free": {
+      "confidence_min": 0.5,
+      "confidence_mean": 0.5,
+      "margin_min": 0.0,
+      "margin_mean": 0.0,
+      "neg_entropy_max": -1.0,
+      "neg_entropy_sum": -6.0
+    },
+    "proxy_constrained": {
+      "confidence_min": 0.49999999999999994,
+      "confidence_mean": 0.49999999999999994,
+      "margin_min": 0.0,
+      "margin_mean": 0.0,
+      "neg_entropy_max": -1.0,
+      "neg_entropy_sum": -6.0
+    },
+    "proxy_gap": {
+      "confidence_min": 5.551115123125783e-17,
+      "confidence_mean": 5.551115123125783e-17,
+      "margin_min": 0.0,
+      "margin_mean": 0.0,
+      "neg_entropy_max": 0.0,
+      "neg_entropy_sum": 0.0
+    },
+    "verdict": "All marginal proxies identical across the pair (max gap 5.55e-17) while C differs by 1.6781 bits."
+  }
+}

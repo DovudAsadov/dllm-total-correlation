@@ -1,0 +1,31 @@
+\begin{table}[!ht]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\caption{\textbf{Where the residual and the ill-defined blocks are.} \emph{residual}:
+noise-corrected residual of one pooled ridge predictor (profile, confidence and $B$,
+$\lambda{=}10$) fitted on both domains and scored separately on each, with a
+document-clustered 95\% interval. \emph{chain-rule dev.}: median spread over reveal orders
+of the chain-rule log-probability at a fixed assignment \cite{chainruledev}.
+\emph{$\widehat{\mathrm{C}}<0$} and \emph{$\widehat{\mathrm{C}}>W$}: percentage of blocks
+beyond two standard errors outside $[0,W]$, $W=B-\max_i H(Y_i)$, which no joint admits.
+\emph{subst.}: the part of those beyond $0.2$ bits. The rest are hairlines on
+near-deterministic blocks.}
+\label{tab:domain}
+\begin{tabular}{lrrrrrrr}
+\toprule
+ & \multicolumn{2}{c}{residual (bits)} & \multicolumn{2}{c}{chain-rule dev.} & \multicolumn{3}{c}{impossible (\% of blocks)} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-8}
+Model / regime & prose & code & prose & code & $\widehat{\mathrm{C}}<0$ & $\widehat{\mathrm{C}}>W$ & subst. \\
+\midrule
+Dream base / infill & $1.35$ \scriptsize$[1.17,1.54]$ & $1.01$ \scriptsize$[0.74,1.27]$ & $0.42$ & $0.06$ & $9.5$ & $7.9$ & $5.9$ \\
+Dream base / suffix & $1.33$ \scriptsize$[1.12,1.54]$ & $1.01$ \scriptsize$[0.86,1.15]$ & $0.76$ & $0.28$ & $0.0$ & $1.6$ & $1.2$ \\
+Dream instr. / infill & $2.23$ \scriptsize$[1.95,2.49]$ & $0.92$ \scriptsize$[0.54,1.35]$ & $0.59$ & $0.03$ & $25.1$ & $8.9$ & $14.6$ \\
+Dream instr. / suffix & $2.58$ \scriptsize$[2.21,2.92]$ & $1.28$ \scriptsize$[1.06,1.47]$ & $1.17$ & $0.30$ & $4.9$ & $8.1$ & $8.1$ \\
+LLaDA base / infill & $1.00$ \scriptsize$[0.84,1.16]$ & $0.54$ \scriptsize$[0.44,0.65]$ & $0.28$ & $0.04$ & $8.5$ & $4.3$ & $1.4$ \\
+LLaDA base / suffix & $1.18$ \scriptsize$[0.97,1.38]$ & $0.93$ \scriptsize$[0.83,1.05]$ & $0.47$ & $0.21$ & $0.0$ & $0.4$ & $0.4$ \\
+LLaDA instr. / infill & $1.16$ \scriptsize$[0.98,1.35]$ & $0.58$ \scriptsize$[0.47,0.68]$ & $0.27$ & $0.04$ & $7.6$ & $9.5$ & $2.3$ \\
+LLaDA instr. / suffix & $1.45$ \scriptsize$[1.22,1.68]$ & $1.00$ \scriptsize$[0.83,1.17]$ & $0.67$ & $0.20$ & $0.0$ & $0.8$ & $0.4$ \\
+\bottomrule
+\end{tabular}
+\end{table}
