@@ -34,7 +34,7 @@ for t in TAGS:
     worst_dev = max(worst_dev, max(abs(x - mean) / mean for x in prod))
     if rows:
         rows.append(r"\midrule")
-    rows.append(rf"\multicolumn{{6}}{{l}}{{\emph{{{LAB[t]}, deployed regime, "
+    rows.append(rf"\multicolumn{{6}}{{l}}{{\emph{{{LAB[t]}, suffix regime, "
                 rf"$n={d['config']['n_blocks']}$ blocks, $k={d['config']['k']}$}}}} \\")
     for m, pr in zip(grid, prod):
         c = d["curve"][str(m)]
@@ -55,15 +55,11 @@ tex = r"""\begin{table}[!ht]
 \centering
 \small
 \setlength{\tabcolsep}{5pt}
-\caption{\textbf{The meter converges as $1/\sqrt{M}$.} Per-block standard error of
-$\Chat_M$ against the number of sampled reveal orders $M$, on a fixed block set per
-checkpoint. Each smaller $M$ uses the first $M$ of the same $256$ orders, so the deviation from
-$\Chat_{256}$ in the last columns understates the error of an independent run of size
-$M$, by a factor of $\sqrt{256/(256-M)}$. The last
-three columns give the mean and maximum absolute deviation of $\Chat_M$ from
-$\Chat_{256}$ on the same blocks, and the forward-pass cost per block. The main runs use
-$M{=}64$, the row where the deviation from a $4\times$ larger budget is already a
-fraction of the residuals reported in Table~\ref{tab:explains}.}
+\caption{\textbf{The estimator converges as $1/\sqrt{M}$.} Per-block standard error of
+$\Chat_M$ and its deviation from $\Chat_{256}$ on $48$ fixed blocks per checkpoint, with
+the forward-pass cost. Each smaller $M$ reuses the first $M$ of the same $256$ orders, so
+the deviation understates an independent run's error by $\sqrt{256/(256-M)}$. The main
+runs use $M{=}64$.}
 \label{tab:meter}
 \begin{tabular}{rrrrrr}
 \toprule

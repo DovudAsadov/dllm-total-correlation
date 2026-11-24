@@ -2,16 +2,6 @@
 \centering
 \footnotesize
 \setlength{\tabcolsep}{3.5pt}
-\caption{\textbf{Where the residual and the ill-defined blocks are.} \emph{residual}:
-noise-corrected residual of one pooled ridge predictor (profile, confidence and $B$,
-$\lambda{=}10$) fitted on both domains and scored separately on each, with a
-document-clustered 95\% interval. \emph{chain-rule dev.}: median spread over reveal orders
-of the chain-rule log-probability at a fixed assignment \cite{chainruledev}.
-\emph{$\widehat{\mathrm{C}}<0$} and \emph{$\widehat{\mathrm{C}}>W$}: percentage of blocks
-beyond two standard errors outside $[0,W]$, $W=B-\max_i H(Y_i)$, which no joint admits.
-\emph{subst.}: the part of those beyond $0.2$ bits. The rest are hairlines on
-near-deterministic blocks.}
-\label{tab:domain}
 \begin{tabular}{lrrrrrrr}
 \toprule
  & \multicolumn{2}{c}{residual (bits)} & \multicolumn{2}{c}{chain-rule dev.} & \multicolumn{3}{c}{impossible (\% of blocks)} \\
@@ -28,4 +18,9 @@ LLaDA instr. / infill & $1.16$ \scriptsize$[0.98,1.35]$ & $0.58$ \scriptsize$[0.
 LLaDA instr. / suffix & $1.45$ \scriptsize$[1.22,1.68]$ & $1.00$ \scriptsize$[0.83,1.17]$ & $0.67$ & $0.20$ & $0.0$ & $0.8$ & $0.4$ \\
 \bottomrule
 \end{tabular}
+\caption{\textbf{Where the residual and the ill-defined blocks are.} \emph{residual}:
+noise-corrected residual of one pooled ridge predictor, scored on each domain, with a
+document-clustered 95\% interval. \emph{chain-rule dev.}: median, as in \S\ref{sec:bugimpact}.
+\emph{impossible}: percentage of blocks more than two standard errors outside $[0,W]$,
+and \emph{subst.}\ those beyond $0.2$ bits.}\label{tab:domain}
 \end{table}

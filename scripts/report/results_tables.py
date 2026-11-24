@@ -49,26 +49,20 @@ tex = r"""\begin{table}[t]
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{lrrrrrrrrr}
 \toprule
- & & \multicolumn{2}{c}{measured $\mathrm{C}$} & \multicolumn{2}{c}{\% Var$[\mathrm{C}]$} & \multicolumn{3}{c}{residual s.d. (bits)} & window \\
+ & & \multicolumn{2}{c}{measured $\widehat{\mathrm{C}}$} & \multicolumn{2}{c}{\% Var explained} & \multicolumn{3}{c}{residual (bits)} & bound \\
 \cmidrule(lr){3-4}\cmidrule(lr){5-6}\cmidrule(lr){7-9}
-Model / regime & $n$ & mean & s.d. & $B$ & best & best & $fW$ & ref. & $W$ \\
+Model / regime & $n$ & mean & s.d. & $B$ & best & best & $f\cdot W$ & reference & $W$ \\
 \midrule
 """ + "\n".join(rows) + r"""
 \bottomrule
 \end{tabular}
-\caption{\textbf{How well the marginals predict $\mathrm{C}$.} $\mathrm{C}$ is estimated
-per candidate set with the order-averaged chain-rule estimator, in bits. ``s.d.'' is the
-block-to-block standard deviation after subtracting the estimator's own variance.
-``\% Var'' is out-of-fold $R^2$ with document-grouped folds, corrected for estimator
-variance, for a predictor built from the summed marginal entropy $B$ alone and for the
-best of $40$ $k$-NN and ridge predictors over five feature sets up to the full top-$8$
-profile, which subsumes every \emph{single-step} rule we score but not the cross-step
-stability rules of \cite{less,stability}. The residual columns are noise-corrected
-residual standard deviations: \emph{best} for that predictor (nested selection moves it
-by at most $0.035$ bits, App.~\ref{app:nested}), \emph{$fW$} for the one-parameter
-predictor $f\cdot W$ with $f$ fitted out-of-fold, and \emph{ref.} for a coupling-agnostic
-reference that knows the marginal entropies, hence $W$, with $\mathrm{C}$ uniform on $[0,W]$.
-$W=B-\max_i H(Y_i)$ is the certified window of \eqref{eq:width}, at the median block.}
+\caption{\textbf{How well the marginals predict $\widehat{\mathrm{C}}$.}
+\emph{measured $\widehat{\mathrm{C}}$}: mean and noise-corrected s.d.\ in bits.
+\emph{\% Var explained}: out-of-fold $R^2$ of $B$ alone and of the best of $40$
+predictors (\S\ref{sec:explains}). \emph{residual}: noise-corrected out-of-fold error of
+that predictor, of the one-parameter $f\cdot W$, and of a reference that knows the
+marginal entropies, with $\mathrm{C}$ uniform on $[0,W]$.
+$W$: median bound.}
 \label{tab:explains}
 \end{table}
 """
@@ -81,7 +75,7 @@ keys = sorted(A["fidelity"])
 SHORT = {"confidence_min": "conf (min)", "confidence_mean": "conf (mean)",
          "margin_min": "marg (min)", "margin_mean": "marg (mean)",
          "neg_entropy_max": "negH (max)", "neg_entropy_sum": "negH (sum)"}
-hdr = " & ".join(["Model / regime"] + [SHORT[p] for p in PROXIES] + [r"marg$-$conf"])
+hdr = " & ".join(["Model / regime"] + [SHORT[p] for p in PROXIES])
 body = []
 for k in keys:
     f = A["fidelity"][k]["C_hat_bits"]
@@ -89,33 +83,23 @@ for k in keys:
     for p in PROXIES:
         r = f[p]
         cells.append(f"${r['spearman']:+.2f}$" + (r"$^{*}$" if r["excludes_zero"] else ""))
-    d = f["_margin_minus_confidence"]
-    cells.append(f"${d['diff']:+.3f}$" + (r"$^{*}$" if d["ci95"][0] > 0 or d["ci95"][1] < 0 else ""))
     body.append(" & ".join([key_label(k)] + cells) + r" \\")
 
 tex2 = r"""\begin{table}[t]
 \centering
 \footnotesize
-\setlength{\tabcolsep}{3.5pt}
-\begin{tabular}{l""" + "r" * (len(PROXIES) + 1) + r"""}
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{l""" + "r" * len(PROXIES) + r"""}
 \toprule
 """ + hdr + r""" \\
 \midrule
 """ + "\n".join(body) + r"""
 \bottomrule
 \end{tabular}
-\caption{\textbf{Every marginal rule against measured $\mathrm{C}$, on real
-checkpoints.} Spearman $\rho$ between each proxy's safety score and the meter's
-$\widehat{\mathrm{C}}$, so a faithful proxy is negative. $^{*}$ marks intervals
-excluding zero under a document-clustered bootstrap ($10^4$ resamples), and every one of
-the
-""" + str(len(PROXIES) * len(keys)) + r""" correlations does. Pooling across the block
-(mean, sum) beats gating on its weakest position (min, max) in every setting. The last column is a \emph{paired} bootstrap of the difference in $\rho$ between
-the min versions of top-2 margin and confidence on the same blocks, positive where
-confidence is the better rule. The pooled comparisons are in Table~\ref{tab:paired}. This is
-the correct test for ``does margin beat confidence'' and is strictly stronger than asking
-whether two marginal intervals overlap. Our exact audit (Table~\ref{tab:proxy}) favours
-margin, and on real checkpoints that reverses.}
+\caption{\textbf{Every marginal rule against measured $\mathrm{C}$.} Spearman $\rho$
+between each rule's safety score and $\widehat{\mathrm{C}}$, so a faithful rule is
+negative. $^{*}$: the document-clustered bootstrap interval excludes zero. Paired
+comparisons between rules are in Table~\ref{tab:paired}.}
 \label{tab:fidelity}
 \end{table}
 """
@@ -149,19 +133,12 @@ Model / regime & med.\ conf. & $B$ & $\widehat{\mathrm{C}}$ & chain-rule dev. & 
 """ + "\n".join(crows) + r"""
 \bottomrule
 \end{tabular}
-\caption{\textbf{Controls.} \emph{chain-rule dev.}: spread over reveal orders of the
-chain-rule log-probability at a fixed assignment, exactly zero for conditionals that
-compose into one joint \cite{chainruledev}. \emph{cond.\ sens.}: mean total-variation
-distance between $p(Y_j\given c)$ and $p(Y_j\given y_i,c)$. A model that ignores what
-has been filled in sits near zero, would trivially score as ``consistent'', and would
-trivially have $\mathrm{C}=0$, so this separates a genuinely composable joint from a
-degenerate one. \emph{distinct $y$}: number of distinct greedy assignments obtained
-under $8$ different reveal orders, out of $8$. When this exceeds one, the sequential
-``reference'' decode against which parallel-commit error is usually measured is itself
-order-dependent, and \emph{pairwise dis.} reports how far apart those references are.
-\emph{inv.\ ok}: fraction of blocks satisfying the structural invariant that the first
-sequentially decoded position, drawn from the same distribution as the parallel commit,
-agrees with it. Anything below $100$ is nondeterminism in the forward pass.}
+\caption{\textbf{Controls.} Medians over blocks, except \emph{inv.\ ok}.
+\emph{chain-rule dev.}: as in \S\ref{sec:bugimpact}. \emph{cond.\ sens.}: total-variation
+distance between $p(Y_j\given c)$ and $p(Y_j\given y_i,c)$. \emph{distinct $y$} and
+\emph{pairwise dis.}: distinct greedy assignments under $8$ reveal orders, and how far
+apart they are. \emph{inv.\ ok}: percentage of blocks whose first sequential decode agrees
+with the parallel commit.}
 \label{tab:controls}
 \end{table}
 """

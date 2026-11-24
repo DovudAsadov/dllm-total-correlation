@@ -112,18 +112,12 @@ tex = r"""\begin{table}[!ht]
 \centering
 \footnotesize
 \setlength{\tabcolsep}{4pt}
-\caption{\textbf{Both terms of \eqref{eq:orderinfo}, measured on a subset.} Medians over
-probed blocks, in bits, on a second GPU (NVIDIA GB10, same checkpoints and blocks as the
-main run). Per model and regime the probe takes $24$ blocks the main run flagged as
-outside $[0,W]$, where there are that many, and $16$ random others.
-$\widehat{\mathrm{C}}$ is the order-averaged estimate with $B$ from the estimator's own first
-forward pass. \emph{KL} is $\mathbb{E}_\pi\mathrm{KL}(q_\pi\,\|\,\prod_i p_i)$, estimated
-from the same samples by scoring them under the parallel marginals. $I$ is the order
-information $I(\pi;Y_S)$, from all $4!$ orders evaluated at $32$ sampled assignments per
-block. \emph{KL$-I$} is the cost relative to a random-order sampler. Where the
-conditionals compose the four columns agree. The last three columns use the random blocks
-only (cells with at least $3$), which the text quotes: their number, the median of
-KL$-\widehat{\mathrm{C}}$, and the median $I$.}
+\caption{\textbf{Both terms of \eqref{eq:orderinfo}, measured on a subset.} Medians in
+bits on an NVIDIA GB10, over up to $24$ flagged and $16$ random blocks per model and
+regime (App.~\ref{app:probe}). $\widehat{\mathrm{C}}$ takes $B$ from the estimator's own
+forward pass. \emph{KL} is $\mathbb{E}_\pi\mathrm{KL}(q_\pi\,\|\,\prod_i p_i)$, $I$ the
+order information, and KL$-I$ the cost relative to a random-order sampler. Where the
+conditionals compose, $\widehat{\mathrm{C}}$, KL and KL$-I$ agree and $I=0$.}
 \label{tab:probe}
 \begin{tabular}{lrrrrrrrr}
 \toprule

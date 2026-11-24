@@ -253,16 +253,11 @@ for r in rows:
 tex += [
     r"\bottomrule",
     r"\end{tabular}",
-    r"\caption{\textbf{The exact audit.} Six marginal rules scored against "
-rf"analytic $\mathrm{{C}}$ on all ${N_TOT}$ candidate sets from \textsc{{replace\_random}} and "
-rf"\textsc{{shuffle}}, of which ${N_SAFE}$ have $\mathrm{{C}}=0$. The rules collapse to "
-rf"${N_DISTINCT}$ distinct rankings, so one row is shown per ranking. The perfect "
-r"safe-set AUROC is an identity, not a finding: here $\mathrm{C}=0$ \emph{if and only if} "
-rf"the summed marginal entropy is $0$ (all ${N_SAFE}$ at ${H_SAFE_MAX:g}$ bits, all "
-rf"${N_UNSAFE}$ others at $\geq {H_UNSAFE_MIN:.2f}$), so any certainty detector scores "
-r"$1.000$ while measuring no dependency. \emph{gap} is the matched-marginal score "
-rf"difference, exactly $0$ while $\mathrm{{C}}$ differs by ${DC:.2f}$ bits. Comparisons use a "
-r"paired bootstrap of the \emph{difference} in Spearman on the same sets:" + PAIRED_SHORT + r"}",
+    r"" rf"\caption{{\textbf{{The exact audit.}} Six marginal rules against analytic $\mathrm{{C}}$ on "
+rf"${N_TOT}$ candidate sets from \textsc{{replace\_random}} and \textsc{{shuffle}}, one row per "
+rf"distinct ranking. The safe-set AUROC is perfect because $\mathrm{{C}}=0$ here exactly when "
+rf"$B=0$. \emph{{gap}}: score difference on the matched-marginal pair of \S\ref{{sec:worstcase}}, "
+rf"which differ in $\mathrm{{C}}$ by ${DC:.2f}$ bits.}}",
     r"\label{tab:proxy}",
     r"\end{table}",
 ]

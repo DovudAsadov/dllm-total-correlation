@@ -116,7 +116,7 @@ claim(f"total block count {total:,} appears in the paper",
 per = sorted({len([r for r in v if r["regime"] == rg])
               for v in RECS.values() for rg in ("suffix", "infill")})
 claim(f"per-setting block range {per[0]}-{per[-1]} appears",
-      in_tex(f"${per[0]}$ to ${per[-1]}$ blocks"), f"(computed {per[0]}-{per[-1]})")
+      in_tex_ws(f"${per[0]}$ to ${per[-1]}$ blocks"), f"(computed {per[0]}-{per[-1]})")
 
 # ---------------------------------------------------------------- invariant
 inv = [c["invariant_ok_frac"] for c in A["controls"].values()]
@@ -146,7 +146,7 @@ conf_sig = sum(1 for d in diffs.values() if d["ci95"][0] > 0)
 WORD = {2: "two", 3: "three", 4: "four", 5: "five", 6: "six", 7: "seven", 8: "eight"}
 claim(f"confidence beats margin in {conf_better} of {len(diffs)} settings, "
       f"significantly in {conf_sig}",
-      in_tex_ws("the min versions") and in_tex(f"better in {WORD[conf_better]} of {WORD[len(diffs)]} settings, "
+      in_tex_ws("the min versions") and in_tex_ws(f"better in {WORD[conf_better]} of {WORD[len(diffs)]} settings, "
              f"significantly so in {WORD[conf_sig]}"),
       f"(computed {conf_better}/{len(diffs)}, sig {conf_sig})")
 
@@ -317,6 +317,13 @@ claim(f"window ({_cfg['window']}), M ({_cfg['m_meter']}) and top-m ({_cfg['topm'
       in_tex(f"first ${_cfg['window']}$ tokens") and in_tex(f"$M{{=}}{_cfg['m_meter']}$ reveal orders")
       and in_tex(f"top ${_cfg['topm']}$ probabilities"), f"(config {_cfg['window']}/{_cfg['m_meter']}/{_cfg['topm']})")
 
+_fp = {t: json.load(open(os.path.join(RES, f"e5v3_{t}.json")))["config"]["total_forward_passes"]
+       for t in TAGS}
+claim(f"forward calls per run ({_fp['dream_base']} Dream, {_fp['llada_base']} LLaDA) are quoted",
+      _fp["dream_base"] == _fp["dream_instruct"] and _fp["llada_base"] == _fp["llada_instruct"]
+      and in_tex_ws(f"${_fp['dream_base']:,}$ batched forward calls per Dream checkpoint and "
+                    f"${_fp['llada_base']:,}$ per LLaDA".replace(",", "{,}")))
+
 # The k=8 replication now has a table, so its ranges must match it.
 _k8p = os.path.join(RES, "e5v3_analysis_k8.json")
 if os.path.exists(_k8p):
@@ -398,9 +405,6 @@ _fr = _PS["flagged_reappear_total"]
 claim("appendix: flagged blocks that reappear are quoted", in_tex_ws(f"${_fr[0]}$ of the ${_fr[1]}$ blocks the main run"))
 _hl = _PS["hairline_total"]
 claim("appendix: hairline KL counts are quoted", in_tex_ws(f"on ${_hl[0]}$ of ${_hl[1]}$, by up to ${_hl[2]:.2f}$ bits"))
-claim("appendix: Dream alone-vs-batch entropy change is quoted",
-      in_tex_ws(f"by up to ${max(_PS[t]['alone_vs_batch_max_dH_bits'] for t in _T):.1f}$ bits at a single position")
-      and _PS["llada_base"]["alone_vs_batch_max_dH_bits"] < 0.005)   # "unchanged" at quoted precision
 _hw = [v for t in _T for v in _PS[t]["hw_dB_mean_bits"].values()]
 claim("appendix: A100 vs GB10 differences are quoted",
       in_tex_ws(f"by a mean of ${min(_hw):.2f}$ to ${max(_hw):.2f}$ bits per setting and by up to ${max(_PS[t]['hw_dB_max_bits'] for t in _T):.1f}$ bits"))
@@ -454,7 +458,7 @@ for _t in ("dream_base", "dream_instruct"):
     claim(f"{_t} wrong-readout correlation {_o:+.2f} [{_lo:.2f},{_hi:.2f}] is quoted with its interval",
           in_main_ws(f"${_o:+.2f}$ $[{_lo:.2f},{_hi:.2f}]$"))
 
-claim("Eq. (3) states the tight window", in_tex_ws(r"\C_{\max} \;\le\; W \;=\; B-\max_i H(Y_i) \;\le\; (1-1/k)\,B"))
+claim("Eq. (3) states the tight window", in_tex_ws(r"\C_{\max} \;\le\; W \;:=\; B-\max_i H(Y_i\given c) \;\le\; (1-1/k)\,B"))
 claim("the exact certification statement is present", in_tex_ws("if and only if at most one position"))
 claim("Huang Thm 1 and ParallelBench Sec 4 are cited precisely", in_tex_ws(r"\cite[Thm.~1]{huang}") and in_tex_ws(r"\cite[\S4]{parallelbench}"))
 
@@ -477,9 +481,9 @@ claim("W is never called tight, and no 'nothing tighter' claim",
 claim("the reference is described as knowing the marginal entropies",
       in_tex_ws("knows the marginal entropies") and in_tables("knows the marginal entropies"))
 # I2: the partial range is scoped, and Table 11 shows all six rules
-claim("partial-correlation range is scoped to outside Dream-instruct in both places",
-      in_main_ws("outside Dream-instruct, given $W$, the rank correlation")
-      and in_main_ws("given $W$, the correlations outside Dream-instruct fall to between"))
+claim("partial-correlation range is scoped to outside Dream-instruct",
+      in_main_ws("The ranges below exclude it") and in_main_ws("Blocks with $W$ above one bit")
+      and in_main_ws("given $W$ the rank correlation of any of the six rules"))
 claim("Table 11 shows the range over all six rules", in_tables("over the six rules"))
 # I3: probe numbers name their population, Table 12 shows the random blocks
 _PS2 = json.load(open(os.path.join(RES, "probe_summary.json")))
@@ -500,7 +504,7 @@ for _t, _rs in RECS.items():
             if (-_r["C_hat_bits"] if _b else _r["C_hat_bits"] - _Wr) <= 0.2:
                 _hl += 1; _hlc += _r["domain"] == "code"
 claim("hairline share and its code share are quoted, and no 'numerical noise' explanation",
-      in_main_ws(f"${100*_hl/_tot:.0f}\\%$ of these are hairlines within $0.2$ bits, ${100*_hlc/_hl:.0f}\\%$ of them on")
+      in_main_ws(f"${100*_hl/_tot:.0f}\\%$ of these are within $0.2$ bits, ${100*_hlc/_hl:.0f}\\%$ of them on")
       and not in_tex_ws("numerical noise") and in_tex_ws("under-covers"))
 # I5: flags that change when B comes from the estimator's own forward pass
 _chg = _N = 0
@@ -527,24 +531,25 @@ claim("Dream-instruct substantive shares are quoted", in_main_ws(f"${_ds[0]:.1f}
 _ns = [K4[k]["pooled"]["negH_sum_minus_conf_mean"] for k in K4]
 _nb, _cb = sum(v[2] < 0 for v in _ns), sum(v[1] > 0 for v in _ns)
 claim("summed entropy vs mean confidence split is quoted",
-      in_main_ws(f"splits {WORD[_nb]}, {WORD[_cb]} and {WORD[len(_ns) - _nb - _cb]}"))
+      in_main_ws(f"summed entropy beats mean confidence significantly in {WORD[_nb]} "
+                 f"settings and loses significantly in {WORD[_cb]}"))
 claim("pooled confidence vs margin counts are quoted in words",
       in_main_ws(f"significantly better in {WORD[conf_wins]} settings, mean margin in the {WORD[marg_wins]} Dream-instruct settings")
       and all(mm[k][2] < 0 for k in mm if k.startswith("dream_instruct/")))
 _g = json.load(open(os.path.join(RES, "gates.json")))["models"]
 claim("Gate 2 alone-vs-batch maximum is quoted",
-      in_main_ws(f"by up to ${max(m['determinism']['batch1_vs_batchN_max_abs_logprob_diff'] for m in _g.values()):.2f}$"))
+      in_tex_ws(f"by up to ${max(m['determinism']['batch1_vs_batchN_max_abs_logprob_diff'] for m in _g.values()):.2f}$"))
 claim("Gate 2 text names the argmax condition on the measurement shapes", in_main_ws("must agree on every argmax"))
 _ms = json.load(open(os.path.join(RES, "e10_m_sensitivity_llada_base.json")))
 _md = max(abs(r["residual_bits"][1] - r["residual_bits"][0]) for r in _ms["by_regime"].values())
 claim(f"M sensitivity quoted as at most {_md:.3f} bits in text and Table 8",
-      in_main_ws(f"at most ${_md:.3f}$ bits") and in_tables(f"at most ${_md:.3f}$ bits"))
+      in_main_ws(f"at most ${_md:.3f}$ bits") and in_tables(f"${_md:.3f}$"))
 # I7: the k=8 table uses W and the reference
 claim("Table 7 reports W and the reference residual, not the loose bound",
       in_tables("$k{=}8$ replication") and not in_tables("worst-case width $(1-1/k)B$ grows faster") and in_main_ws("Table~\\ref{tab:k8}"))
 # I8: abstract and conclusion say what is predicted and how it relates to the KL cost
 claim("abstract and conclusion name the estimate and its gap to the KL cost",
-      in_main_ws("\\emph{predict} an order-averaged estimate") and in_main_ws("predict the estimate $\\Chat$")
+      in_main_ws("our estimate ranks sets like the exact KL cost") and in_main_ws("predict the estimate $\\Chat$")
       and in_main_ws("sits a median $0.4$ to $1.1$ bits below it") and not in_tex_ws("only where the diagnostics"))
 # upgraded minors
 claim("Dream-instruct anomaly described as concentrated, not confined, on prose",
@@ -575,12 +580,12 @@ claim("Gate 2 tolerance is quoted as a tenth of the smallest residual",
 claim("all four checkpoints pass Gate 2, with the estimator shapes agreeing exactly",
       all(g["passed"] for g in _G2.values())
       and all(d["estimator_batch_max_abs_dH_bits"] == 0.0 and d["estimator_batch_argmax_flips"] == 0 for d in _d2.values())
-      and in_main_ws("all four checkpoints pass with the two shapes agreeing exactly"))
+      and in_tex_ws("all four checkpoints pass with the two shapes agreeing exactly"))
 _df = {t: _d2[t]["batch_size_argmax_flips"] for t in _d2}
 claim("alone-vs-batch flips are quoted (1 of 64 on each Dream, none on LLaDA)",
       _df["dream_base"] == _df["dream_instruct"] == 1 and _df["llada_base"] == _df["llada_instruct"] == 0
       and all(d["n_positions_compared_alone_vs_batch"] == 64 for d in _d2.values())
-      and in_main_ws("flips $1$ of $64$ argmaxes on each Dream checkpoint"))
+      and in_tex_ws("flips $1$ of $64$ argmaxes on each Dream checkpoint"))
 claim("appendix quotes the largest alone-vs-batch entropy change",
       in_tex_ws(f"up to ${max(d['batch1_vs_batchN_max_abs_entropy_diff_bits'] for d in _d2.values()):.1f}$ bits of entropy at one position"))
 

@@ -2,7 +2,7 @@
 
 **Total Correlation in Diffusion LM Parallel Decoding**
 
-Dovud Asadov, Rustambek Urokov, Qobiljon Toshnazarov, Kayumov Abduaziz, Mardon Hazratov,
+Dovud Asadov, Rustambek Urokov, Qobiljon Toshnazarov, Abduaziz Kayumov, Mardon Hazratov,
 Husanboy Mansuraliyev
 New Uzbekistan University
 

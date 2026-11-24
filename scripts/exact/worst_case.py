@@ -513,54 +513,44 @@ def write_table(out):
         r"\begin{table}[!ht]",
         r"\centering",
         r"\small",
-        r"\begin{tabular}{lrrrrr}",
+        r"\begin{tabular}{lrrr}",
         r"\toprule",
-        r"Marginal profile & $k$ & $B=\sum_i H(Y_i)$ & $\mathrm{C}_{\min}$ & $\mathrm{C}_{\max}$ & diameter \\",
+        r"Marginal profile & $k$ & $B=\sum_i H(Y_i)$ & $\mathrm{C}_{\max}$ \\",
         r"\midrule",
-        r"\multicolumn{6}{l}{\emph{(a) fair bits: exact vertex enumeration of the fibre}} \\",
+        r"\multicolumn{4}{l}{\emph{(a) fair bits: exact vertex enumeration over all joints with these marginals}} \\",
     ]
+    # C_min is always 0 (the product measure) and the diameter equals C_max, so the
+    # table shows C_max only. Assert it rather than assume it.
+    for r in rows:
+        assert abs(r["C_min"]) < 1e-9 and abs(r["diameter"] - r["C_max"]) < 1e-9, r
     for r in rows:
         if r["panel"] != "A":
             continue
-        tex.append(f"{r['k']} fair bits ($c=0.5$) & {r['k']} & {r['budget_bits']:.3f} & "
-                   f"{r['C_min']:.3f} & {r['C_max']:.3f} & {r['diameter']:.3f} \\\\")
+        tex.append(f"{r['k']} fair bits & {r['k']} & {r['budget_bits']:.3f} & {r['C_max']:.3f} \\\\")
     tex += [
         r"\midrule",
-        r"\multicolumn{6}{l}{\emph{(b) $k=4$, every position Bernoulli($c$) at confidence $c$}} \\",
+        r"\multicolumn{4}{l}{\emph{(b) $k=4$, every position Bernoulli($c$) at confidence $c$}} \\",
     ]
     for r in rows:
-        if r["panel"] != "B":
+        if r["panel"] != "B" or r["c"] == 0.5:   # c = 0.5 repeats the 4-fair-bits row
             continue
-        tex.append(f"$c={r['c']:g}$ & {r['k']} & {r['budget_bits']:.3f} & "
-                   f"{r['C_min']:.3f} & {r['C_max']:.3f} & {r['diameter']:.3f} \\\\")
+        tex.append(f"$c={r['c']:g}$ & {r['k']} & {r['budget_bits']:.3f} & {r['C_max']:.3f} \\\\")
     if os.environ.get("MODEL_ROWS") == "1":
         tex += [
             r"\midrule",
-            rf"\multicolumn{{6}}{{l}}{{\emph{{(c) certified upper bound at observed "
+            rf"\multicolumn{{4}}{{l}}{{\emph{{(c) certified upper bound at observed "
             rf"operating points (median over {nb_lo} to {nb_hi} blocks)}}}} \\",
         ]
         for m in models:
             tex.append(f"{m['model']} ($c={m['median_confidence_min']:.2f}$) & {m['k']} & "
-                       f"{m['median_budget_bits']:.3f} & {m['C_min_bits']:.3f} & "
-                       f"{m['C_max_bits']:.3f} & {m['diameter_bits']:.3f} \\\\")
+                       f"{m['median_budget_bits']:.3f} & {m['C_max_bits']:.3f} \\\\")
     frac = "; ".join(
         f"{m['model']}: {m['n_blocks_diameter_ge_1bit']}/{m['n_blocks']}"
         for m in models)
     tex += [
         r"\bottomrule",
         r"\end{tabular}",
-        r"\caption{\textbf{What fixing the marginals leaves undetermined.} Since"
-        r" $H(Y_S\mid c)\ge 0$, Eq.~\eqref{eq:tc} certifies $\mathrm{C}\le B:=\sum_{i\in S}H(Y_i\mid c)$,"
-        r" which is exactly minus the \texttt{neg\_entropy\_sum} proxy. Marginal rules"
-        r" bound $\mathrm{C}$, they do not locate it. The fibre of joints with these marginals is"
-        r" convex, so $\mathrm{C}$ attains every value in $[\mathrm{C}_{\min},\mathrm{C}_{\max}]$: the product measure"
-        r" gives $\mathrm{C}_{\min}=0$, and a minimum-entropy coupling gives"
-        r" $\mathrm{C}_{\max}=B-\min_P H(P)$, which for equal marginals is $(k-1)H(Y_1)$, so $k$"
-        r" fair bits span exactly $[0,k-1]$ bits (rows (a), by exact vertex enumeration)."
-        r" Every entry is a statement about the whole fibre of joints compatible with a"
-        r" marginal profile, so it bounds what the marginals fail to say and not what any"
-        r" particular trained model does. What a real checkpoint actually does is measured"
-        r" in \S\ref{sec:explains}.}",
+        r"\caption{\textbf{What fixing the marginals leaves undetermined.} The largest $\mathrm{C}$ over all joints with the given marginals, $B-\min_P H(P)$ (\S\ref{sec:worstcase}). The smallest is always $0$. Rows (a) are by exact vertex enumeration.}",
         r"\label{tab:nontightness}",
         r"\end{table}",
     ]

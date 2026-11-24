@@ -55,14 +55,10 @@ write("tables/domain.tex", r"""\begin{table}[!ht]
 \footnotesize
 \setlength{\tabcolsep}{3.5pt}
 \caption{\textbf{Where the residual and the ill-defined blocks are.} \emph{residual}:
-noise-corrected residual of one pooled ridge predictor (profile, confidence and $B$,
-$\lambda{=}10$) fitted on both domains and scored separately on each, with a
-document-clustered 95\% interval. \emph{chain-rule dev.}: median spread over reveal orders
-of the chain-rule log-probability at a fixed assignment \cite{chainruledev}.
-\emph{$\widehat{\mathrm{C}}<0$} and \emph{$\widehat{\mathrm{C}}>W$}: percentage of blocks
-beyond two standard errors outside $[0,W]$, $W=B-\max_i H(Y_i)$, which no joint admits.
-\emph{subst.}: the part of those beyond $0.2$ bits. The rest are hairlines on
-near-deterministic blocks.}
+noise-corrected residual of one pooled ridge predictor, scored on each domain, with a
+document-clustered 95\% interval. \emph{chain-rule dev.}: median, as in \S\ref{sec:bugimpact}.
+\emph{impossible}: percentage of blocks more than two standard errors outside $[0,W]$,
+and \emph{subst.}\ those beyond $0.2$ bits.}
 \label{tab:domain}
 \begin{tabular}{lrrrrrrr}
 \toprule
@@ -96,24 +92,19 @@ write("tables/paired.tex", r"""\begin{table}[!ht]
 \centering
 \footnotesize
 \setlength{\tabcolsep}{3.5pt}
-\caption{\textbf{Paired comparisons, and what the rules see beyond certainty.} The first
-three columns are paired, document-clustered bootstraps ($2{,}000$ resamples) of
-$\rho(\text{first rule},\widehat{\mathrm{C}})-\rho(\text{second rule},\widehat{\mathrm{C}})$
-on the same blocks, positive where the second rule is the better one. $^{*}$ marks
-intervals excluding zero. \emph{pooled vs min}: the largest upper end, over the three
-statistics, of the interval for pooled minus min. Negative throughout means pooling
-wins every one of the $24$ paired comparisons. The last two columns are the smallest and
-largest partial Spearman correlation, over the six rules, of a rule with
-$\widehat{\mathrm{C}}$ given the window $W$ (per-rule values and intervals are in
-\texttt{results/e5v3\_corrections.json}). Without conditioning the pooled rules reach $\rho$
-of $-0.83$ to $-0.94$ outside Dream-instruct (Table~\ref{tab:fidelity}), so most of what a
-rule knows about $\mathrm{C}$ is the width of the window it certifies.}
+\caption{\textbf{Paired comparisons, and what the rules see beyond certainty.} First three
+columns: paired document-clustered bootstrap of
+$\rho(\text{first},\widehat{\mathrm{C}})-\rho(\text{second},\widehat{\mathrm{C}})$,
+positive where the second rule is better, $^{*}$ where the interval excludes zero.
+\emph{pooled vs min}: largest upper end of the three pooled-minus-min intervals, negative
+where pooling wins all three. Last two columns: range over the six rules of the partial
+Spearman correlation with $\widehat{\mathrm{C}}$ given $W$.}
 \label{tab:paired}
 \begin{tabular}{lrrrrrr}
 \toprule
- & marg$-$conf & marg$-$conf & negH$-$conf & pooled vs & \multicolumn{2}{c}{partial $\rho$ given $W$} \\
+ & marg$-$conf & marg$-$conf & negH$-$conf & pooled$-$min & \multicolumn{2}{c}{partial $\rho$ given $W$} \\
 \cmidrule(lr){6-7}
-Model / regime & (min) & (mean) & (sum vs mean) & min (max hi) & \multicolumn{2}{c}{over the six rules} \\
+Model / regime & (min) & (mean) & (sum vs mean) & (upper end) & \multicolumn{2}{c}{over the six rules} \\
 \midrule
 """ + "\n".join(rows) + r"""
 \bottomrule

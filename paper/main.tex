@@ -16,7 +16,12 @@
 \usepackage{xcolor}
 \usepackage{graphicx}
 \usepackage{caption}
-\captionsetup{font=small}
+\captionsetup{font=small, skip=6pt}
+% Captions go below every table and figure. The style swaps the caption skips inside
+% `table` (it expects captions above), so restore the plain environment.
+\makeatletter
+\renewenvironment{table}{\@float{table}}{\end@float}
+\makeatother
 
 % float-only pages centre their floats vertically by default, which leaves an
 % appendix table stranded in the middle of an otherwise empty page.
@@ -30,8 +35,8 @@
 Total Correlation in Diffusion LM Parallel Decoding}
 
 \author{%
-  \mdseries Dovud Asadov \quad Rustambek Urokov \quad Qobiljon Toshnazarov\\
-  Kayumov Abduaziz \quad Mardon Hazratov \quad Husanboy Mansuraliyev\\
+  \mdseries Dovud Asadov\thanks{Equal contribution.} \quad Rustambek Urokov\footnotemark[1] \quad Qobiljon Toshnazarov\\
+  Abduaziz Kayumov \quad Mardon Hazratov \quad Husanboy Mansuraliyev\\
   New Uzbekistan University\\
   {\footnotesize\texttt{\{d.asadov, r.urokov, q.toshnazarov, a.kayumov, m.hazratov, h.mansuraliyev\}@newuu.uz}}
 }
@@ -40,206 +45,177 @@ Total Correlation in Diffusion LM Parallel Decoding}
 \maketitle
 
 \begin{abstract}
-A masked diffusion language model commits several masked positions per step. When its
-conditionals compose into a joint, the exact cost of committing a set $S$ is that joint's
-conditional total correlation $\C(S\given c)$. When they do not, we say exactly what our
-estimate measures. Many systems choose the commit set from per-position marginals. That
-such a rule cannot \emph{determine} $\C$ is elementary, and we state it exactly: the
-marginals certify $\C\le W=B-\max_i H(Y_i)$, with $B$ the summed marginal entropy, and at
-fixed marginals $\C$ takes every value up to a maximum $\C_{\max}\le W$. We ask instead
-how well the marginals \emph{predict} an order-averaged estimate $\Chat$ of $\C$, per
-candidate set on four masked diffusion LMs from two families, $247$ to $516$ blocks per
-model and regime. Outside Dream-instruct, a marginal-only predictor scored out-of-fold
-and corrected for estimator variance leaves a residual of $0.74$ to $1.17$ bits, $1.8$
-to $3.7$ times below a reference that knows the marginal entropies but not the coupling.
-Most of that predictability is the window itself. On a subset, $\Chat$ ranks blocks like
-the KL cost of a parallel commit but sits a median $0.4$ to $1.1$ bits below it on prose
-and in the deployed regime. Dream-instruct is the exception, mainly on prose, where its
-conditionals are least self-consistent and the estimate stops measuring a commit cost. These results concern predicting $\C$ for a fixed set, not the gain of a
-decoder that coordinates its commits. Getting there requires a validated readout. Dream
-and LLaDA need \emph{opposite} logit-position conventions, and reading Dream with the
-wrong one costs $6.9$ bits on the correct token, inflates a conditional-inconsistency
-diagnostic $14$ to $41\times$, and in the deployed regime erases the confidence-error
-correlation on Dream-base and reverses it on Dream-instruct. We specify gates that
-measure the convention and report them for every checkpoint. Scoring six marginal rules
-against measured $\C$, pooling across the block beats gating on its weakest position in
-all $24$ paired comparisons, and the top-2 margin, which dominates confidence on tasks
-with analytic $\C$, does not on these checkpoints.
+A masked diffusion language model is fast because it commits several tokens per step.
+Each token is sampled from its own marginal, so the dependency between the tokens is
+lost, and the size of that loss is the conditional total correlation $\C$ of the
+committed set. Most decoders choose the set from per-position marginals, which can bound
+$\C$ but cannot determine it. We ask how well they \emph{predict} it. We estimate $\C$
+for fixed candidate sets on four masked diffusion LMs from two families. On three of the
+four, the best marginal-only predictor is off by about one bit ($0.74$ to $1.17$), $1.8$
+to $3.7$ times less than a baseline that knows only the bound, and most of this accuracy
+comes from the bound itself. On a subset, our estimate ranks sets like the exact KL cost
+of a parallel commit, but sits a median $0.4$ to $1.1$ bits below it on prose and when
+the rest of the text is still masked. Dream-instruct is the exception, mainly on prose,
+where its conditionals are least self-consistent. Among six common marginal rules,
+pooling over the set beats gating on its weakest position in all $24$ paired
+comparisons. The measurement needs a validated readout: Dream and LLaDA place a
+position's prediction at \emph{different} logit indices, and the wrong index inflates an
+inconsistency diagnostic $14$ to $41\times$. We give three checks that measure the
+convention. Our results concern predicting $\C$ for a fixed set, not what a
+dependency-aware decoder gains.
 \end{abstract}
 
 \section{Introduction}
 \label{sec:intro}
 
-A masked diffusion language model (dLLM) \cite{llada,dream} writes text by committing
-several masked positions per denoising step, and that parallelism is the entire source
-of its speed. Which positions to commit is therefore the central control decision, and a
-large body of work answers it with a rule computed from each position's marginal
-separately: token confidence \cite{fastdllm,dynamicdllm}, the top-2 margin, the
-predictive entropy, or cross-step stability \cite{less,stability}. A second line
-estimates the dependency itself, usually from attention \cite{dapd,geoblock}.
+A masked diffusion language model (dLLM) \cite{llada,dream} starts from a fully masked
+sequence and fills it in over a few denoising steps. Its speed comes from committing
+several positions in the same step. Which positions to commit together is therefore the
+main decision a decoder makes.
 
-The cost these rules are approximating is known exactly. Committing a set $S$ in one
-step samples each position from its own marginal and discards the joint structure, and
-the Kullback--Leibler cost of that factorization is the \emph{conditional total
-correlation}
+Committing together has a cost. Suppose two masked positions should read either
+``New York'' or ``Los Angeles'', each with probability one half. The model's prediction
+for each position on its own is then a fair coin: ``New'' or ``Los'' at the first
+position, ``York'' or ``Angeles'' at the second. A parallel commit samples the two
+positions independently, so half of the time it writes ``New Angeles'' or ``Los York''.
+Neither marginal is wrong. What is lost is the dependency between the two positions.
+
+This loss has an exact measure. Committing a set $S$ in one step replaces the joint
+distribution over $S$ by the product of its marginals, and the Kullback--Leibler cost of
+that replacement is the \emph{conditional total correlation}
 \begin{equation}
   \C(S \given c) \;=\; \sum_{i \in S} H(Y_i \given c) \;-\; H(Y_S \given c) \;\ge\; 0,
   \label{eq:tc}
 \end{equation}
-the information shared among the positions of $S$ given the already-decoded context $c$
-\cite{parallelbench,dcd}. It is zero exactly when the positions are conditionally
-independent, and it lower-bounds the achievable KL of a parallel commit
+where $c$ is the already-decoded context. $\C$ is the information the positions of $S$
+share given $c$. It is zero exactly when they are conditionally independent, it is one
+bit in the example above, and it lower-bounds the KL of any factorised commit
 \cite{parallelbench,huang}.
 
-That a marginal rule cannot \emph{determine} $\C$ is not news: it is stated in
-\cite{cocommit}, motivates several decoders \cite{coherent,demask,dos}, and in the worst
-case takes two lines of information theory, which \S\ref{sec:worstcase} states exactly as
-a reference point. But the
-worst case is not the question a practitioner has, since a decoder only meets the joints
-a trained model produces. The open question, and the one we answer, is:
+Most decoders do not measure $\C$. They choose $S$ with a rule computed from each
+position's marginal separately: token confidence \cite{fastdllm,dynamicdllm}, the top-2
+margin, the predictive entropy, or cross-step stability \cite{less,stability}. In the example, a marginal rule sees two fair coins, and it would
+see the same two fair coins if the positions were independent and $\C$ were zero. So a
+marginal rule cannot \emph{determine} $\C$. It can only bound it from above
+(\S\ref{sec:worstcase}). This is known: it is stated in \cite{cocommit} and motivates
+several decoders \cite{demask,dos}.
+
+But a decoder never meets the worst case. It meets only the joints that a trained model
+produces. The open question, and the one we answer, is:
 
 \begin{quote}
 \emph{On a real dLLM, how much of the variation in $\C$ is recoverable from the
 marginals, and how much do the rules that read them leave behind?}
 \end{quote}
 
-Answering it needs two things the literature has not put together: $\C$ measured per
-candidate set on a real checkpoint, and a readout of that checkpoint one can trust.
+Answering it needs two things that the literature has not put together: $\C$ measured
+per candidate set on a real checkpoint, and a readout of that checkpoint one can trust.
 
-\paragraph{Reading a dLLM's marginals is not trivial, and getting it wrong is not
-loud.} Dream \cite{dream} keeps the shift of the autoregressive backbone it was
-initialised from, so its hidden state at $i$ predicts the token at $i{+}1$. LLaDA
-\cite{llada} predicts masked tokens in place. Two of the most widely used open
-checkpoints require \emph{opposite} conventions, and the difference is invisible to any
-type check. Reading Dream at $\delta{=}0$ costs $6.9$ bits on the correct token.
-Its greedy decodes then collapse into a repeated token, but a measurement
-pipeline that never decodes text sees none of that, and the confidence-error
-correlation it reports is erased or reversed without looking wrong (\S\ref{sec:bugimpact}). We therefore specify three gates that \emph{measure} the
-convention rather than assuming it.
+\paragraph{Reading the marginals is not trivial.} Dream \cite{dream} keeps the shift of
+its autoregressive backbone, so its output at index $i$ predicts the token at $i{+}1$,
+while LLaDA \cite{llada} predicts each masked token in place. Two of the most widely
+used open checkpoints therefore need \emph{opposite} conventions, and no type check
+catches the difference. A pipeline that reads Dream at the wrong index still returns
+numbers, and they look plausible (\S\ref{sec:bugimpact}).
 
-\paragraph{Contributions.} \textbf{(1)} A measurement protocol with three gates
-(\S\ref{sec:protocol}), namely readout offset, forward-pass determinism, and a
-decode-and-read check. The offset gate scores \emph{hidden} true tokens, so a
-bidirectional model cannot pass by copying, and it recovers each checkpoint's documented
-convention without being told it. \textbf{(2)} A single-variable ablation of what a
-wrong readout does to the measurement (\S\ref{sec:bugimpact}). \textbf{(3)} $\C$
-estimated per candidate set on four checkpoints, with the residual left by the
-strongest marginal-only predictor we could fit, scored out-of-fold and corrected for
-estimator variance, and a precise account of what the estimate means when the
-conditionals do not compose (\S\ref{sec:explains}). \textbf{(4)} All six deployed rules
-against measured $\C$, with paired tests (\S\ref{sec:fidelity}). As a reference point we
-state the worst case exactly (\S\ref{sec:worstcase}), a short characterisation built on
-the factorisation bound of \cite[Thm.~1]{huang} and the analysis of
-\cite[\S4]{parallelbench}.
+\paragraph{Contributions.}
+\begin{itemize}\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}\setlength{\topsep}{2pt}
+\item \textbf{The marginals predict $\C$ to about one bit.} We estimate $\C$ per
+candidate set on four checkpoints from two families and fit the strongest marginal-only
+predictor we could. On three of the four its error is $0.74$ to $1.17$ bits, $1.8$ to
+$3.7$ times smaller than that of a baseline that knows only the upper bound. Most of the
+accuracy comes from the bound itself, because real sets use about half of it
+(\S\ref{sec:explains}).
+\item \textbf{How a rule pools matters more than which statistic it reads.} We score six
+deployed rules against measured $\C$ with paired tests. Averaging over the set beats
+gating on its weakest position in all $24$ comparisons, and the advantage the top-2
+margin has on synthetic tasks does not carry over (\S\ref{sec:fidelity}).
+\item \textbf{What the estimate means when the model is inconsistent.} A dLLM's
+conditionals need not agree with any single joint. We give an exact identity for what
+our estimate measures in that case and check it against the KL cost of a parallel commit
+(\S\ref{sec:meaning}).
+\item \textbf{A readout protocol.} Three checks \emph{measure} the logit-position
+convention of a checkpoint rather than assuming it, and an ablation shows what the
+wrong convention does to the statistics above (\S\ref{sec:bugimpact}).
+\end{itemize}
+As a reference point we also state the worst case exactly (\S\ref{sec:worstcase}), a
+short characterisation built on the factorisation bound of \cite[Thm.~1]{huang} and the
+analysis of \cite[\S4]{parallelbench}.
 
-\section{Background and related work}
-\label{sec:bg}
-
-\paragraph{Masked diffusion decoding.} A masked dLLM's one-step kernel over the masked
-positions factorises, $p_\theta(x_{t-1}\given x_t)=\prod_i p_\theta(x^i_{t-1}\given
-x_t)$, a mean-field product \cite{mdlm,md4}. A decoder reveals a subset $S$ per step,
-sampling each position from its marginal, and $|S|=1$ recovers any-order
-autoregression.
-
-\paragraph{Total correlation as the cost of parallelism.} That $\C$ governs
-parallel-commit error is established from several directions: a KL floor
-\cite{parallelbench,huang}, the dependency a factorised step drops \cite{dcd},
-sequence-error step-scaling \cite{feng}, optimal-schedule analysis \cite{schedules},
-convergence rates in $\C$ and its dual \cite{intrinsicdep}, an information-theoretic
-separation of generation order from parallelisation bias \cite{genorder}, and a
-Gaussian-field analysis \cite{gaussiantc}. Dataset-level estimation dates to
-non-autoregressive translation \cite{huang}. ParallelBench \cite{parallelbench} supplies
-the synthetic family with analytic $\C$ that we reuse in \S\ref{sec:worstcase}, and
-finds that a confidence rule loses to random selection there once $\C>0$. We add a per-candidate-set estimate
-of $\C$ on real checkpoints and ask how much of it the marginals recover.
-
-\paragraph{Dependency-aware decoding.} Many recent decoders replace confidence with an
-estimated dependency signal: attention-derived graphs \cite{dapd,geoblock,clad},
-learned pairwise mutual information \cite{neuralmi}, dependency predictors
-\cite{demask,dawn,dos}, mean-field coordination \cite{meanfield}, conditional
-independence testing \cite{punt}, local coherence \cite{locallycoherent}, a learned
-commitment policy \cite{tracelock}, and a coordination pass that names $\C$ as the
-obstacle \cite{cocommit}. We measure how well the marginals predict the dependency of a
-fixed candidate set, not how much a decoder that coordinates its commits would gain, which
-needs a matched-compute comparison that we do not run.
-
-\paragraph{Conditional inconsistency in masked models.} That an MLM's conditionals need
-not compose into any joint is long established \cite{mlminconsist}, with consequences
-for sampling dynamics \cite{glauber} and denoising order \cite{pathdenoise}. The
-specific diagnostic we use as a covariate, which holds the assignment fixed and varies
-the reveal order so that a consistent joint gives exactly zero spread, is
-\emph{chain-rule deviation}, introduced for order-agnostic LMs by \cite{chainruledev}.
-We do not claim it, and report it as a covariate that \S\ref{sec:bugimpact} shows is
-highly sensitive to a readout error.
-
-\section{The worst case: what a marginal profile certifies}
+\section{Setup: total correlation and what the marginals certify}
 \label{sec:worstcase}
 
-Since $H(Y_S\given c)\ge0$, Eq.~\eqref{eq:tc} gives immediately
+\paragraph{Parallel commits.} At each step a masked dLLM predicts every masked position
+from the current sequence $x_t$, and the predictions are independent of each other:
+$p_\theta(x_{t-1}\given x_t)=\prod_i p_\theta(x^i_{t-1}\given x_t)$ \cite{mdlm,md4}. A
+decoder picks a set $S$ of masked positions and samples each from its own marginal. With
+$|S|=1$ this is any-order autoregression and nothing is lost. With $|S|>1$ the commit
+loses the $\C(S\given c)$ of Eq.~\eqref{eq:tc}. We write $Y_i$ for the token at position
+$i$, $k=|S|$, and $c$ for everything the model can see. This section assumes that the
+model's conditionals \emph{compose into one joint}: there is a single joint distribution
+over $Y_S$ whose conditionals they are. \S\ref{sec:meaning} treats the
+case where they do not.
+
+\paragraph{The bound $W$.} The marginals fix the first term of Eq.~\eqref{eq:tc}, the
+summed marginal entropy $B$. Since the joint entropy is non-negative,
 \begin{equation}
-  0 \;\le\; \C(S\given c) \;\le\; \sum_{i\in S} H(Y_i\given c) \;=:\; B(S\given c),
+  0 \;\le\; \C(S\given c) \;\le\; \sum_{i\in S} H(Y_i\given c) \;=:\; B(S\given c).
   \label{eq:budget}
 \end{equation}
-so the summed marginal entropy is a \emph{certified upper bound} on the dependency a
-parallel commit discards. A tighter ceiling that depends on the marginals only through
-their entropies is $\C\le W:=B-\max_i H(Y_i\given c)$, since a joint is never less
-uncertain than its most uncertain coordinate, and it shows exactly when the marginals
-settle the question: they certify $\C=0$ if and only if at most one position of $S$ is
-uncertain.
-
-The set of joints with a fixed marginal profile (a transportation polytope) is convex
-and compact, and always contains the product measure, so $\C=0$ is attainable. At the
-other end a minimum-entropy coupling gives $\C_{\max}=B-\min_P H(P)$, and since
-$H(P)\ge\max_i H(Y_i)\ge B/k$,
+A tighter bound uses the fact that a joint is never less uncertain than its most
+uncertain coordinate, $H(Y_S\given c)\ge\max_i H(Y_i\given c)$. Let $\C_{\max}$ be the
+largest $\C$ over all joints that have the given marginals. Then
 \begin{equation}
-  \C_{\max} \;\le\; W \;=\; B-\max_i H(Y_i) \;\le\; (1-1/k)\,B ,
+  \C \;\le\; \C_{\max} \;\le\; W \;:=\; B-\max_i H(Y_i\given c) \;\le\; (1-1/k)\,B .
   \label{eq:width}
 \end{equation}
-with equality throughout, $(k{-}1)H(Y_1)$, for an equal-marginal profile, attained by
-the comonotone coupling. Because $\C$ is continuous on a connected set, every intermediate value is
-realised. Minimising the concave $H$ over a polytope attains its minimum at a vertex, so
-for small $k$ we verify $\C_{\max}$ by exact vertex enumeration: $k$ fair bits span
-exactly $[0,k{-}1]$ bits (Table~\ref{tab:nontightness}).
+We call $W$ \emph{the bound}. It is the largest dependency that the marginal entropies
+allow, and it is all that a marginal rule can certify. In particular, the marginals
+certify $\C=0$ if and only if at most one position of $S$ is uncertain.
 
-A clean witness is $n$ fair coins against $n$ coins conditioned on exactly $n/2$ heads:
-identical marginals and $B=n$ bits, but $\C=n-\log_2\binom{n}{n/2}$ ($1.415$ bits at
-$n{=}4$), so every marginal rule must score them identically \cite{marginalsmatch}.
+Inside $[0,\C_{\max}]$ the marginals decide nothing: every value is realised by some
+joint, and for equal marginals $\C_{\max}=W$ (App.~\ref{app:fibre},
+Table~\ref{tab:nontightness}).
 
+\paragraph{Same marginals, different $\C$.} A clean example is $n$ fair coins against
+$n$ coins conditioned on exactly $n/2$ heads. Every coin is fair in both, so the
+marginals are identical and $B=n$ bits. But the first has $\C=0$ and the second has
+$\C=n-\log_2\binom{n}{n/2}$, which is $1.415$ bits at $n{=}4$. Every marginal rule must
+give the two the same score \cite{marginalsmatch}.
 
-\subsection{An exact audit, and why a benchmark result cannot settle this}
-\label{sec:oracle}
+\paragraph{The six marginal rules.} We score six rules that decoders use. Each reads
+one statistic per position and pools it over the set into a \emph{safety score}, where
+higher means safer to commit. The statistics are the \emph{confidence} (the largest
+probability), the \emph{top-2 margin} (the largest probability minus the second
+largest), and the negative \emph{entropy}. Each is pooled in two ways: by the weakest
+position of the set (the minimum confidence, the minimum margin, the negative maximum
+entropy), or over the whole set (the mean confidence, the mean margin, the negative
+summed entropy, which is $-B$). We call the first kind \emph{min} rules and the second
+kind \emph{pooled} rules.
 
-To score the deployed rules where $\C$ is known exactly we use the synthetic
-list-operation family of ParallelBench \cite{parallelbench} and its analytic $\C$, plus
-two controls of our own. Enumerated and closed-form $\C$ agree to $1.6\times10^{-14}$
-bits. Over the $355$ candidate sets, the six rules collapse to four distinct rankings and
-the top-2 margin ranks $\C$ far better than confidence, by $0.394$ $[0.296,0.494]$ under
-a paired bootstrap of the difference (Table~\ref{tab:proxy}). The bootstrap is paired
-because the rules score the \emph{same} sets.
+\paragraph{Two regimes.} A candidate set is always a block of $k$ adjacent positions,
+with $k{=}4$ unless stated. We measure it in two regimes. In the \emph{suffix} regime
+everything from the block to the end of the text is masked, which is what a decoder
+continuing a prompt sees. In the \emph{infill} regime only the block is masked, with
+context on both sides. Suffix blocks are much more uncertain: the median $B$ is $11.7$
+to $17.3$ bits, against $3.5$ to $4.3$ bits in infill (Table~\ref{tab:controls}).
 
-Every proxy attains a perfect safe-set AUROC of $1.000$ here, and that number is empty:
-on this family $\C=0$ holds \emph{if and only if} $B=0$, so any certainty detector scores
-perfectly. We therefore treat the ranking above as a hypothesis to test on the four
-checkpoints rather than a prescription, and \S\ref{sec:fidelity} finds it reverses.
-
-
-\paragraph{Why this is a reference point and not a result.} Eq.~\eqref{eq:width}
-quantifies over all joints compatible with a profile, not over the ones \emph{a
-particular trained model} produces, which is what a decoder faces.
-\S\ref{sec:explains} measures that.
-
-\section{A measurement protocol for dLLM marginals}
+\section{Measuring $\C$ on a real model}
 \label{sec:protocol}
 
-Everything in \S\ref{sec:explains} and \S\ref{sec:fidelity} rests on one contract:
-given a masked canvas and a position $p$, return $p_\theta(Y_p \given \text{canvas})$.
-Three gates establish that contract per checkpoint before any number is produced.
 
-\paragraph{The estimator.} $\C$ needs the joint entropy $H(Y_S\given c)$, which is not
-directly available, whereas the marginal terms are. We estimate it by the chain rule along
-randomly sampled reveal orders. For a permutation $\pi$ of $S$ we draw one ancestral
-path through the model's any-order conditionals and accumulate the \emph{exact} entropy
-of each predicted categorical,
+
+\subsection{The estimator}
+\label{sec:estimator}
+
+The marginal entropies in Eq.~\eqref{eq:tc} come from one forward pass. The joint
+entropy $H(Y_S\given c)$ does not, so we build it from the chain rule, which holds for
+any order $\pi$ of the positions:
+$H(Y_S\given c)=\sum_t H(Y_{\pi(t)}\given Y_{\pi(<t)},c)$. In practice we draw a random
+order $\pi$ and reveal the block one position at a time. At step $t$ we read the model's
+distribution for position $\pi(t)$ given the context and the tokens revealed so far,
+record its \emph{exact} entropy, sample a token from it, and write the token in. The
+recorded entropies add up to one estimate of the joint entropy,
 \begin{equation}
   \hat H_{\pi}(Y_S\given c) \;=\; \sum_{t=1}^{|S|}
   H_\theta\!\big(Y_{\pi(t)} \given y_{\pi(<t)}, c\big),
@@ -247,270 +223,329 @@ of each predicted categorical,
   y_{\pi(t)} \sim p_\theta\!\big(\cdot \given y_{\pi(<t)}, c\big),
   \label{eq:meter}
 \end{equation}
-and average over $M$ independent orders:
+and we average over $M$ independent orders:
 \begin{equation}
   \Chat_M(S\given c) \;=\; \underbrace{\sum_{i\in S} H_\theta(Y_i\given c)}_{B(S\given c)}
   \;-\; \frac{1}{M}\sum_{m=1}^{M}\hat H_{\pi_m}(Y_S\given c).
   \label{eq:chat}
 \end{equation}
-If the conditionals compose into a joint, the chain rule makes $\hat H_\pi$ unbiased for
-$H(Y_S\given c)$ for \emph{any} single order, so averaging only reduces variance. We take
-$M{=}64$ throughout, report the per-block
-standard error $\mathrm{sd}_m(\hat H_{\pi_m})/\sqrt{M}$, and correct for it wherever
-$\Chat$ enters a variance decomposition. The estimator queries the model only through
-conditionals, so the identical code runs on the exact oracle of \S\ref{sec:oracle},
-where it recovers analytic $\C$ to $0.0087$ bits, and on a checkpoint. Cost is $M|S|$
-conditional queries per set, batched across orders.
+If the conditionals compose into one joint, $\hat H_\pi$ is unbiased for $H(Y_S\given c)$
+under \emph{any} single order, and averaging only reduces the variance. If they do not,
+$\Chat$ is still well defined, but its meaning changes. We postpone that case to
+\S\ref{sec:meaning}.
 
-\paragraph{What $\Chat$ estimates when the conditionals do not compose.} Let $q_\pi$ be
-the joint over $S$ produced by revealing $S$ in order $\pi$ with the model's conditionals,
-$\bar q=\mathbb{E}_\pi q_\pi$ the joint of a sampler whose order is uniformly random, and
-$p_i$ the parallel marginals. Each $\hat H_\pi$ is unbiased for $H(q_\pi)$ whatever the
-conditionals, so $\mathbb{E}\Chat_M=B-\mathbb{E}_\pi H(q_\pi)$. The cost of a parallel
-commit relative to these samplers obeys the exact identity
-\begin{equation}
-  \mathbb{E}_\pi\,\mathrm{KL}(q_\pi\,\|\,\textstyle\prod_i p_i)
-  \;=\;\mathrm{KL}(\bar q\,\|\,\textstyle\prod_i p_i)\;+\;I(\pi;Y_S),
-  \label{eq:orderinfo}
-\end{equation}
-where $I(\pi;Y_S)\le\log_2 k!$ is the information the reveal order carries about the
-outcome. When the conditionals compose, all three of $\mathbb{E}\Chat_M$, the left side
-and the first term on the right equal $\C$, and $I(\pi;Y_S)=0$. When they do not, the
-three separate. If every $q_\pi$ keeps the parallel marginals, $\mathbb{E}\Chat_M$ is the
-left side, and it exceeds the cost relative to a random-order sampler by the order
-information. Two fair bits show the gap: if one order makes the second bit agree with
-the first with probability $0.9$ and the other makes it disagree with probability $0.9$,
-each order gives $0.531$ bits while the mixture is uniform and costs nothing. If the
-$q_\pi$ do not keep the parallel marginals, $\Chat$ is not a divergence at all and can
-be negative. We measured both terms of \eqref{eq:orderinfo} directly on a subset
-(App.~\ref{app:probe}). On its random blocks the per-order KL cost, the left side,
-exceeds $\Chat$ by a median of $0.4$ to $1.1$ bits on LLaDA-base and Dream-base prose and
-in their deployed regime, and $\Chat$ ranks blocks like it (Spearman $0.95$ and $0.90$,
-pooled across settings). The residuals of \S\ref{sec:explains} are therefore residuals
-for $\Chat$, not for the KL cost. On Dream-instruct prose the gap is $4.4$ and $5.6$ bits.
+We use $M{=}64$ throughout. For each block we report the standard error
+$\mathrm{sd}_m(\hat H_{\pi_m})/\sqrt{M}$, and we correct for it wherever $\Chat$ enters a
+variance decomposition. The estimator touches the model only through its conditionals, so the same code
+runs on a checkpoint and on an exact oracle. On synthetic tasks whose $\C$ is known in
+closed form (App.~\ref{app:oracle}) it recovers the analytic value to within $0.0087$
+bits.
 
-\paragraph{Gate 1: which logit index carries position $p$?} A dLLM's head need not be
-aligned to its own positions. Dream keeps the shift of the autoregressive model it was
-initialised from, so its hidden state at $i$ predicts the token at $i{+}1$
-\cite{dream}, while LLaDA predicts masked tokens in place \cite{llada}. We do not take either
-on faith. We mask the block, then score the log-probability the model assigns to the
-tokens that were \emph{actually} there, reading at index $p+\delta$ for
-$\delta\in\{-1,0,+1\}$. Because the true tokens are hidden, a bidirectional model cannot
-win by copying: only the correct convention scores well. We require the winner to agree
-at $k{=}1$ and $k{=}4$ and to beat the runner-up by at least one bit.
+\subsection{Validating the readout}
+\label{sec:bugimpact}
 
-The gate recovers each model's documented convention without being told it, by margins
-of $6.9$ to $11.0$ bits (Fig.~\ref{fig:gates}a, App.~\ref{app:gates}).
+Everything we report rests on one contract: given a masked sequence and a position $p$,
+return the model's distribution for the token at $p$. Three gates test that contract on
+every checkpoint before any number is produced.
+
+\paragraph{Gate 1: which logit index carries position $p$?} A dLLM's output need not be
+aligned with its own positions, and Dream and LLaDA differ (\S\ref{sec:intro}). We mask
+a block and score the log-probability the model gives to the tokens that were
+\emph{actually} there, reading at index $p+\delta$ for $\delta\in\{-1,0,+1\}$. The true
+tokens are hidden, so the model cannot win by copying, and only the correct $\delta$
+scores well. The winner must be the same for $k{=}1$ and $k{=}4$ and must beat the
+runner-up by at least one bit. Without being told, the gate recovers each model's
+documented convention, by margins of $6.9$ to $11.0$ bits (Fig.~\ref{fig:gates}a,
+Table~\ref{tab:gates}).
 
 \paragraph{Gate 2: is the forward pass reproducible?} Two identical calls must return
-identical logits. Our runs also required that scoring a sequence alone or in a batch move
-no argmax, although batch composition moves log-probabilities by up to $0.56$
-(App.~\ref{app:gates}). In the released gate the two batch shapes the estimator combines
-must agree on every argmax and on $B$ to within $0.074$ bits RMS, a tenth of the
-smallest residual we report. On a second GPU all four checkpoints pass with the two shapes
-agreeing exactly, while scoring alone, which the measurement never does, flips $1$ of $64$
-argmaxes on each Dream checkpoint (App.~\ref{app:probe}). We also assert that the first
-sequentially decoded position, drawn from the parallel commit's distribution, never
-disagrees with it, and count violations.
+identical logits. In addition, the two batch shapes that the estimator combines must
+agree on every argmax and on $B$ to within $0.074$ bits RMS, a tenth of the smallest
+error we report. All four checkpoints pass it on a second GPU, and the main run used a weaker form
+(App.~\ref{app:gates}). We also check a \emph{structural invariant} on every block: the
+first position decoded sequentially is drawn from the same distribution as the parallel
+commit, so its argmax must never disagree with it.
 
-\paragraph{Gate 3: does it write?} We greedy-decode into an all-masked canvas using the
-calibrated offset and read the output. At a wrong offset the decode collapses on all three
-checkpoints we probed: one token fills $21$ to $32$ of $32$ prose positions, against runs
-of at most $3$ at the calibrated offset (App.~\ref{app:probe}). The submitted gate only
-required a non-empty decode, so the released code also requires a wrong offset to
-produce such a collapse, and fails on any error.
+\paragraph{Gate 3: does it write?} We greedy-decode into a fully masked sequence at the
+calibrated offset and read the text. At a wrong offset the decode collapses on all three
+checkpoints we probed: one token fills $21$ to $32$ of $32$ prose positions, against
+runs of at most $3$ at the calibrated offset (App.~\ref{app:probe}).
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{figures/fig1_gates.pdf}
-\caption{\textbf{(a)} The offset gate. We mask a block and score the log-probability the
-model assigns to the tokens that were actually there, reading at index $p+\delta$. The
-truth is hidden, so a bidirectional model cannot win by copying. Stars mark the
-convention the gate selects. Dream and LLaDA select \emph{opposite} conventions, each matching its own
-documentation, without being told. \textbf{(b)} The offset ablation: identical corpus, blocks, reveal orders and code path, with only the readout changed. Chain-rule deviation
-\cite{chainruledev} inflates $14$ to $41\times$ across both Dream checkpoints, and in the deployed regime the confidence-error correlation $\rho$ is erased on Dream-base and reversed on Dream-instruct.}
+\includegraphics[width=0.9\textwidth]{figures/fig1_gates.pdf}
+\caption{\textbf{(a)} The offset gate: log-probability of the hidden true tokens, read
+at index $p+\delta$. Stars mark the convention the gate selects: Dream and LLaDA select
+\emph{opposite} ones. \textbf{(b)} The
+offset ablation, with only the readout changed. Chain-rule deviation inflates $14$ to
+$41\times$ on both Dream checkpoints. Under each pair, $\rho$ is the correlation between
+confidence and decoding error at the wrong and at the measured offset.}
 \label{fig:gates}
 \end{figure}
 
+\paragraph{What a wrong offset does.} To see what the gates protect against, we rerun
+Dream with the offset changed from the measured $-1$ to the naive $0$. The corpus, the
+blocks, the reveal orders and the code path stay fixed. Three quantities move
+(Fig.~\ref{fig:gates}b).
 
-\section{What a wrong readout manufactures}
-\label{sec:bugimpact}
+\emph{An inconsistency diagnostic is inflated.} The chain-rule deviation
+\cite{chainruledev} takes one fixed assignment of the block and measures how much its
+chain-rule log-probability changes with the reveal order. It is exactly zero when the
+conditionals compose into one joint. At the wrong offset it reads $6.9$ to $8.3$ bits,
+against $0.18$ to $0.59$ at the right one, a factor of $14$ to $41$. A reader would
+conclude that Dream's conditionals are far from any joint.
 
-To measure what a misaligned readout costs we hold the corpus, blocks, reveal orders and
-code path fixed and change only the offset, from the measured $-1$ to the naive $0$.
-Three quantities move.
+\emph{A headline correlation disappears.} A common outcome variable is the
+\emph{decoding error}: how often a parallel commit disagrees with a sequential
+reference decode. At the right offset its rank correlation with confidence is $-0.66$
+and $-0.69$ in the suffix regime. At the wrong offset it is $+0.07$ $[-0.06,0.19]$ on Dream-base and $+0.19$ $[0.07,0.31]$ on Dream-instruct. The wrong offset erases the
+correlation on one checkpoint and reverses it on the other. A reader would conclude that confidence says nothing about decoding error.
 
-\emph{The consistency diagnostic.} Chain-rule deviation \cite{chainruledev}, exactly zero
-for conditionals that compose into one joint, reads $6.9$ to $8.3$ bits under the
-misaligned readout against $0.18$ to $0.59$ once corrected, across both Dream checkpoints
-and both regimes: a factor of $14$ to $41$. Read naively, the misaligned number would
-say that these checkpoints' conditionals are far from composing into a joint.
-
-\emph{The headline correlation.} In the deployed regime the rank correlation between
-confidence and parallel-decoding error reads $+0.07$ $[-0.06,0.19]$ and $+0.19$
-$[0.07,0.31]$ under the misaligned readout, against $-0.66$ and $-0.69$ once corrected.
-The misaligned readout erases the correlation on Dream-base and reverses it on
-Dream-instruct. An earlier version of this work reported these numbers and concluded
-that confidence is uninformative about parallel-decoding error in the deployed regime.
-That conclusion came from the readout.
-
-\emph{Total correlation itself.} Median $\Chat$ reads $-4.3$ and $-4.8$ bits under the
-misaligned readout in the infill regime, against $+0.78$ and $+0.05$ corrected. Since
-$\C\ge0$ for any genuine joint, a strongly negative estimate is impossible rather than
-surprising, so the estimator flags the error that the disagreement metric hid.
+\emph{$\Chat$ becomes impossible.} In the infill regime the median $\Chat$ is $-4.3$
+and $-4.8$ bits at the wrong offset, against $+0.78$ and $+0.05$ at the right one. No
+joint has $\C<0$, so a strongly negative estimate cannot be a finding. Here the
+estimator flags the error that the other two statistics hide.
 
 \section{How much of $\C$ the marginals explain}
 \label{sec:explains}
 
-We apply \eqref{eq:chat} to $247$ to $516$ non-overlapping $k{=}4$ blocks per checkpoint
-and regime, plus a $k{=}8$ replication, and ask how much of the resulting variation in
-$\C$ a marginal-only predictor recovers. Predictors are scored out-of-fold with
-document-grouped folds and corrected for the meter's own variance, which is $0.7$ to
-$7.5\%$ of $\mathrm{Var}[\Chat]$. We sweep $k$-NN and ridge over five feature sets and
-keep the best out-of-fold score (nested selection moves it by at most $0.035$ bits,
-App.~\ref{app:nested}).
+\paragraph{Protocol.} We apply the estimator \eqref{eq:chat} to the base and instruct
+checkpoints of Dream-Coder 7B \cite{dreamcoder} and LLaDA 8B \cite{llada}, on $247$ to
+$516$ blocks per checkpoint and regime (App.~\ref{app:details}). In each of the eight
+settings we then ask how well $\Chat$ can be predicted from the marginals of the block
+alone. We sweep $k$-NN and ridge over five feature sets built from the per-position
+top-$8$ probabilities and entropies, $40$ candidates in all, and keep the best. Every
+score is out-of-fold, and all blocks of a document share a fold.
 
-\paragraph{The marginals predict $\C$ well, mostly through the window they certify.}
-The worst case \eqref{eq:width} confines $\C$ to $[0,\C_{\max}]\subseteq[0,W]$, with
-median $W$ of $1.3$ to $10.8$ bits across settings, and Fig.~\ref{fig:explains}a shows
-where real blocks fall inside $[0,W]$. Outside Dream-instruct, the best marginal-only predictor leaves a
-residual of $0.74$ to $1.17$ bits (Table~\ref{tab:explains}). A window width and a residual
-are different statistical objects, so we compare the residual with a reference that knows
-the marginal entropies, hence $W$, but nothing about the coupling, with $\C$ uniform on
-$[0,W]$. Knowing $\C_{\max}$, which top-$8$ profiles cannot give, would narrow it. The measured
-residual is $1.8$ to $3.7$ times below that reference. Most of this predictability is the
-window itself. Blocks with $W$ above one bit sit at a median of $0.44$ to $0.56$ of $W$, a one-parameter
-predictor $f\cdot W$ matches the best predictor on LLaDA-base ($0.74$ and $1.07$ bits
-against $0.74$ and $1.05$), and outside Dream-instruct, given $W$, the rank correlation
-of any of the six rules with $\C$ lies between $-0.28$ and $+0.23$ (Table~\ref{tab:paired}). Outside
-Dream-instruct the full profile adds most on Dream-base in the deployed regime, where it
-lowers the residual from $1.81$ to $1.09$ bits.
+Two definitions make the numbers readable. The \emph{residual} of a predictor is its
+out-of-fold root-mean-square error in bits, after the estimator's own variance is
+subtracted ($0.7$ to $7.5\%$ of $\mathrm{Var}[\Chat]$). The \emph{reference} is not a fitted model. It is a
+reference that knows the marginal entropies of each block, hence its bound $W$, and
+nothing about the coupling: it treats $\C$ as uniform on $[0,W]$ and guesses $W/2$. A bound is not an error, and the
+reference turns it into one that the residual can be compared with.
 
-\paragraph{Two families, one outlier, and where it comes from.} Six of the eight settings
-agree closely. Dream-instruct is the exception ($1.62$ and $1.84$ bits), and the
-exception is concentrated on prose. Under one pooled predictor its residual is $2.23$ and
-$2.58$ bits on prose, above every other checkpoint's prose residual, and $0.92$ and
-$1.28$ bits on code, its training domain (Table~\ref{tab:domain}). Its chain-rule
-deviation on prose is the largest we measure. There the KL cost of a parallel commit exceeds
-$\Chat$ by several bits (App.~\ref{app:probe}), so $\Chat$ does not measure it. It is not a generic
-instruction-tuning effect, since LLaDA-instruct sits with the base checkpoints.
+Dream-instruct behaves differently from the other three checkpoints. The ranges below
+exclude it, and we return to it at the end of the section. On a minority of blocks
+$\Chat$ falls outside $[0,W]$. We keep those blocks and discuss them in
+\S\ref{sec:meaning}.
 
-\paragraph{Robust to block size.} Repeating the measurement at $k{=}8$ on both base
-checkpoints gives residuals of $1.60$ to $2.59$ bits, $3.4$ to $5.0$ times below the
-coupling-agnostic reference, against $1.8$ to $3.7$ times at $k{=}4$
+\paragraph{The marginals predict $\Chat$ to about one bit.} The best marginal-only
+predictor leaves a residual of $0.74$ to $1.17$ bits (Table~\ref{tab:explains},
+Fig.~\ref{fig:explains}b). For scale, the median bound $W$ is $1.3$ to $10.8$ bits
+across all eight settings. The residual is $1.8$ to $3.7$ times below the reference. A
+reference that knew $\C_{\max}$ instead of $W$ would be narrower, so these ratios are on
+the generous side.
+
+\paragraph{Most of that is the bound itself.} Fig.~\ref{fig:explains}a shows where real
+blocks fall inside $[0,W]$. They do not spread over it. Blocks with $W$ above one bit
+sit at a median of $0.44$ to $0.56$ of $W$. A predictor with a single parameter,
+$f\cdot W$, therefore already does well. On LLaDA-base it matches the best predictor
+($0.74$ and $1.07$ bits against $0.74$ and $1.05$). The full marginal profile helps
+most on Dream-base in the suffix regime, where it lowers the residual from $1.81$ to
+$1.09$ bits. The six rules add little beyond $W$: given $W$ the rank correlation of any
+of the six rules with $\Chat$ lies between $-0.28$ and $+0.23$ (Table~\ref{tab:paired}).
+
+\paragraph{Dream-instruct is the exception, on prose.} Six of the eight settings agree
+closely. The two Dream-instruct settings do not ($1.62$ and $1.84$ bits), and the excess
+is concentrated on prose.
+Under one pooled predictor its residual is $2.23$ and $2.58$ bits on prose, above every
+other checkpoint's prose residual, and $0.92$ and $1.28$ bits on code, its training
+domain (Table~\ref{tab:domain}). Prose is also where its chain-rule deviation is the
+largest we measure, and where the KL cost of a parallel commit exceeds $\Chat$ by
+several bits (\S\ref{sec:meaning}). On Dream-instruct prose, then, $\Chat$ does not
+measure the cost of a commit, and a poor fit is what one should expect. It is not a generic instruction-tuning effect, since LLaDA-instruct sits with the base
+checkpoints.
+
+\paragraph{The result holds at $k{=}8$.} Repeating the measurement with blocks of eight
+positions on both base checkpoints gives residuals of $1.60$ to $2.59$ bits. That is
+$3.4$ to $5.0$ times below the reference, against $1.8$ to $3.7$ times at $k{=}4$
 (Table~\ref{tab:k8}).
 
-\paragraph{Where $\Chat$ leaves $[0,W]$.} No genuine joint gives $\C<0$ or $\C>W$. Beyond
-two standard errors, $0\%$ to $25\%$ of blocks fall below zero and $0.4\%$ to $9.5\%$
-above $W$. Outside Dream-instruct $79\%$ of these are hairlines within $0.2$ bits, $86\%$ of them on
-code. There the per-block standard error under-covers: when the sampled paths nearly
-coincide it is close to zero and misses the rare branches, so even the KL version, which
-cannot be negative in expectation, falls below minus two standard errors on some of them
-(App.~\ref{app:probe}). The substantive cases, beyond
-$0.2$ bits, are $0.4\%$ to $5.9\%$ of blocks outside Dream-instruct and $8.1\%$ and
-$14.6\%$ on it (Table~\ref{tab:domain}). We report these rates rather than clipping.
-Excluding the blocks below zero moves Dream-instruct's residual from $1.62$/$1.84$ to
-$1.19$/$1.57$ bits and leaves the other checkpoints essentially unchanged.
+
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{figures/fig2_explains.pdf}
-\caption{\textbf{Deployed (suffix) regime only.} The infill settings are in
-Table~\ref{tab:explains}. \textbf{(a)} Measured $\Chat$ against the certified window $W=B-\max_i H(Y_i)$ of \eqref{eq:width}. The dashed line is the ceiling $\C=W$ and the dotted line the median fraction of the window outside Dream-instruct. \textbf{(b)} The headline:
-best marginal-only prediction of $\C$ against the truth, out-of-fold with
-document-grouped folds. The scatter about the diagonal is the residual left by the
-strongest marginal-only predictor we fit.}
+\includegraphics[width=0.9\textwidth]{figures/fig2_explains.pdf}
+\caption{\textbf{Suffix regime only.} The infill settings are in
+Table~\ref{tab:explains}. \textbf{(a)} Measured $\Chat$ against the bound
+$W=B-\max_i H(Y_i)$ of \eqref{eq:width}. The dashed line is $\C=W$ and the dotted line
+is the median fraction of $W$ outside Dream-instruct. \textbf{(b)} The best
+marginal-only prediction against measured $\Chat$, out-of-fold with document-grouped
+folds. The scatter about the diagonal is the residual.}
 \label{fig:explains}
 \end{figure}
 
 \input{tables/explains.tex}
 
-\section{Proxy fidelity on real checkpoints}
+\section{Comparing the six marginal rules}
 \label{sec:fidelity}
 
-Table~\ref{tab:fidelity} scores all six marginal rules against measured $\C$. All $48$
-model-regime-proxy correlations are negative and exclude zero under a
-document-clustered bootstrap. That much is expected from $\C\le W$ once a rule tracks
-certainty: given $W$, the correlations outside Dream-instruct fall to between $-0.28$ and
-$+0.23$ (Table~\ref{tab:paired}). The informative part is how the rules compare with each other,
-and two comparisons run against the synthetic audit.
+We now score the six rules of \S\ref{sec:worstcase} against measured $\Chat$. The score
+is the Spearman rank correlation $\rho$ between a rule's safety score and $\Chat$ across
+blocks. A good rule calls a block safe when its $\Chat$ is low, so a faithful rule has a
+negative $\rho$ (Table~\ref{tab:fidelity}).
 
-\paragraph{Aggregation matters more than the statistic.} In every one of the eight
-settings, pooling across the block beats taking its weakest position: confidence-mean
-beats confidence-min, margin-mean beats margin-min, and summed neg-entropy beats maximum
-neg-entropy, by $0.066$ to $0.235$ in $|\rho|$, and a paired bootstrap excludes zero in all $24$ comparisons (Table~\ref{tab:paired}). The ``commit only if the least confident member is confident'' rule that
-several systems use is the aggregation that throws the most away.
+\paragraph{Every rule tracks $\Chat$, mostly through certainty.} All $48$ correlations,
+six rules in eight settings, are negative and exclude zero under a document-clustered
+bootstrap. That much is expected. Since $\C\le W$, any rule that tracks certainty also
+tracks the bound, and conditioning on $W$ removes most of the correlation
+(\S\ref{sec:explains}). The informative part is how the rules compare with each other.
 
-\paragraph{The synthetic prescription does not transfer.} On our exact tasks the top-2
-margin ranks $\C$ far better than confidence, by $0.394$ $[0.296,0.494]$ under a paired
-bootstrap (Table~\ref{tab:proxy}). On real checkpoints the min versions reverse it:
-confidence is better in seven of eight settings, significantly so in six, by up to
-$0.189$ $[0.121,0.264]$. For the pooled versions neither dominates. Mean confidence is
-significantly better in five settings, mean margin in the two Dream-instruct settings,
-and one is a tie, and summed entropy against mean confidence splits three, two and three
-(Table~\ref{tab:paired}). The pooled rules reach $\rho=-0.83$ to $-0.94$ outside
-Dream-instruct. These are statements about predicting $\C$. Whether a pooled rule makes
-a better decoder is a separate question that needs an end-to-end comparison.
+\paragraph{How a rule pools matters more than what it reads.} In every one of the eight
+settings, the pooled rule beats the min rule that reads the same statistic: mean
+confidence beats minimum confidence, mean margin beats minimum margin, and summed
+entropy beats maximum entropy. The gain is $0.066$ to $0.235$ in $|\rho|$, and a paired
+bootstrap excludes zero in all $24$ comparisons (Table~\ref{tab:paired}). Gating on the
+least confident position, as threshold rules do \cite{fastdllm,dynamicdllm}, is the
+weaker way to pool. The pooled rules reach $\rho=-0.83$ to $-0.94$ outside
+Dream-instruct.
 
-\paragraph{The usual outcome variable is a weak stand-in.} Parallel-commit error is
-normally measured as disagreement between a parallel commit and a sequential reference
-decode. Against measured $\C$ that variable correlates at only $+0.23$ to $+0.64$. It is
-also not always well defined: in the deployed regime a greedy reference decoded under
-$8$ different reveal orders yields a median of $2$ distinct assignments, with pairwise
-disagreement $0.21$ to $0.31$, so the reference against which error is measured depends
-on an arbitrary choice. In the infill regime it is order-invariant ($1$ distinct
-assignment, pairwise disagreement $0$). This is our reason for measuring $\C$ rather
-than proxying it. Every checkpoint reacts to what is filled in, with median
-total-variation distance $0.31$ to $0.37$ in the deployed regime and $0.05$ to $0.08$ in
-infill (Table~\ref{tab:controls}), and the structural invariant of \S\ref{sec:protocol}
-holds on all $3{,}030$ blocks.
+\paragraph{A prescription from synthetic tasks does not transfer.}
+\label{sec:oracle}
+Before turning to real checkpoints we scored the same six rules where $\C$ is known
+exactly, on $355$ candidate sets from the synthetic list-operation tasks of ParallelBench
+\cite{parallelbench} (App.~\ref{app:oracle}). There the top-2 margin ranks $\C$ far
+better than confidence, by $0.394$ $[0.296,0.494]$ in $\rho$ under a paired bootstrap
+(Table~\ref{tab:proxy}). On real checkpoints that advantage is gone. Among the min
+versions, confidence is better in seven of eight settings, significantly so in six, by
+up to $0.189$ $[0.121,0.264]$. Among the pooled rules neither statistic dominates. Mean
+confidence is significantly better in five settings, mean margin in the two
+Dream-instruct settings, and one is a tie. Likewise, summed entropy beats mean
+confidence significantly in three settings and loses significantly in two
+(Table~\ref{tab:paired}).
+
+\paragraph{What this does and does not say.} These are statements about predicting
+$\Chat$. Whether a pooled rule makes a better decoder is a separate question that needs
+an end-to-end comparison. We also do not use the usual outcome variable, decoding error,
+as the target. It is a weak stand-in for $\Chat$, with a correlation of only $+0.23$ to $+0.64$, and in the suffix
+regime it depends on the reveal order of the reference decode (App.~\ref{app:controls}).
 
 \input{tables/fidelity.tex}
+
+\section{What $\Chat$ does and does not measure}
+\label{sec:meaning}
+
+Eq.~\eqref{eq:tc} to \eqref{eq:width}, and the reading of $\C$ as the KL cost of a
+parallel commit, assume that the conditionals compose into one joint. A dLLM's any-order
+conditionals need not \cite{mlminconsist}. The estimator does not need the assumption:
+$\Chat$ is always $B$ minus an order-averaged chain-rule entropy.
+
+\paragraph{Three quantities that agree only for a consistent model.} Let $q_\pi$ be the
+joint over $S$ that the model produces when $S$ is revealed in order $\pi$, let
+$\bar q=\mathbb{E}_\pi q_\pi$ be the joint of a sampler whose order is uniformly random,
+and let $p_i$ be the parallel marginals. Three numbers matter. The first is what the
+estimator returns, $\mathbb{E}\,\Chat_M=B-\mathbb{E}_\pi H(q_\pi)$, since each
+$\hat H_\pi$ is unbiased for $H(q_\pi)$ whatever the conditionals. The second is the
+cost of a parallel commit against a fixed-order sampler, averaged over orders,
+$\mathbb{E}_\pi\,\mathrm{KL}(q_\pi\,\|\,\prod_i p_i)$. The third is its cost against the
+random-order sampler, $\mathrm{KL}(\bar q\,\|\,\prod_i p_i)$.
+The last two are tied by an exact identity,
+\begin{equation}
+  \mathbb{E}_\pi\,\mathrm{KL}(q_\pi\,\|\,\textstyle\prod_i p_i)
+  \;=\;\mathrm{KL}(\bar q\,\|\,\textstyle\prod_i p_i)\;+\;I(\pi;Y_S),
+  \label{eq:orderinfo}
+\end{equation}
+where $I(\pi;Y_S)\le\log_2 k!$ is the information that the reveal order carries about
+the outcome. When the conditionals compose, all three numbers equal $\C$ and
+$I(\pi;Y_S)=0$. When they do not, there are two cases.
+
+When each reveal order keeps the parallel marginals, $\mathbb{E}\,\Chat_M$ equals the
+per-order KL cost, the left side of \eqref{eq:orderinfo}. It is still a cost, and it
+exceeds the cost against a random-order sampler by the order information. Two fair bits
+show the gap. Suppose one order makes the second bit agree with the first with
+probability $0.9$, and the other order makes it disagree with probability $0.9$. Each
+order costs $0.531$ bits, while the mixture of the two is uniform and costs nothing.
+
+When the reveal orders do not keep the parallel marginals, $\Chat$ is not a divergence
+at all, and it can be negative.
+
+\paragraph{How far $\Chat$ is from the cost of a commit.} We measured both terms of
+\eqref{eq:orderinfo} directly on a subset of blocks (App.~\ref{app:probe},
+Table~\ref{tab:probe}). On its random blocks, the per-order KL cost exceeds $\Chat$ by a
+median of $0.4$ to $1.1$ bits on LLaDA-base and Dream-base prose and in their suffix
+regime. $\Chat$ still ranks blocks like the KL cost (Spearman $0.95$ and $0.90$, pooled
+across settings). So on these checkpoints $\Chat$ orders blocks by the cost of a commit
+but understates its size, and the residuals of \S\ref{sec:explains} are residuals for
+$\Chat$, not for the KL cost. On Dream-instruct prose the gap is $4.4$ and $5.6$ bits,
+and there $\Chat$ does not measure the cost.
+
+\paragraph{Impossible values.} No joint gives $\C<0$ or $\C>W$, so the blocks where
+$\Chat$ leaves $[0,W]$ are a direct sign that something is off. Beyond two standard
+errors, $0\%$ to $25\%$ of blocks fall below zero and $0.4\%$ to $9.5\%$ above $W$
+(Table~\ref{tab:domain}). Most of these are tiny. Outside Dream-instruct $79\%$ of these
+are within $0.2$ bits, $86\%$ of them on code. There the standard error is too small to trust (App.~\ref{app:probe}). The substantive cases, beyond $0.2$ bits, are
+$0.4\%$ to $5.9\%$ of blocks outside Dream-instruct and $8.1\%$ and $14.6\%$ on it. We
+report these rates rather than clipping. Excluding the blocks below zero moves
+Dream-instruct's residual from $1.62$/$1.84$ to $1.19$/$1.57$ bits and leaves the other
+checkpoints essentially unchanged.
+
+\section{Related work}
+\label{sec:bg}
+
+\paragraph{The cost of parallel commits.} The cost of a parallel commit has been
+analysed as a KL floor in $\C$ \cite{parallelbench,huang}, as the dependency a
+factorised step drops \cite{dcd}, and through step counts \cite{feng}, inference
+schedules \cite{schedules}, convergence rates \cite{intrinsicdep}, generation order
+\cite{genorder} and a Gaussian-field model \cite{gaussiantc}. Dataset-level estimates of
+$\C$ date to non-autoregressive translation \cite{huang}. ParallelBench
+\cite{parallelbench} supplies the synthetic tasks with analytic $\C$ that we reuse, and
+finds that a confidence rule loses to random selection there once $\C>0$. We add an
+estimate of $\C$ per candidate set on real checkpoints and ask how much of it the
+marginals recover.
+
+\paragraph{Dependency-aware decoders.} Many recent decoders account for the dependency
+between commits. They estimate it from attention \cite{dapd,geoblock,clad,dos},
+dependency graphs \cite{dawn}, learned mutual information \cite{neuralmi} or a learned
+predictor \cite{demask}, or they coordinate commits through a mean-field step
+\cite{meanfield}, conditional independence tests \cite{punt}, an auxiliary
+autoregressive model \cite{locallycoherent}, a learned policy \cite{tracelock} or a
+coordination pass \cite{cocommit}. We measure how well the marginals predict the
+dependency of a fixed set, not what such a decoder gains.
+
+\paragraph{Inconsistent conditionals.} That the conditionals of a masked language model
+need not compose into any joint is known \cite{mlminconsist}, with consequences for
+sampling \cite{glauber} and denoising order \cite{pathdenoise}. Our diagnostic, the
+chain-rule deviation, is from \cite{chainruledev}. We show that it is highly sensitive
+to a readout error (\S\ref{sec:bugimpact}).
 
 \section{Limitations}
 \label{sec:limitations}
 
-\paragraph{What $\C$ means for these models.} Eq.~\eqref{eq:tc} to \eqref{eq:width} and
-the reading of $\C$ as the KL cost of a parallel commit assume that the conditionals
-compose into one joint, and a dLLM's any-order conditionals need not \cite{mlminconsist}.
-The estimator does not need that assumption. $\Chat$ is always $B$ minus an
-order-averaged chain-rule entropy. When each reveal order keeps the parallel marginals,
-Eq.~\eqref{eq:orderinfo} relates it to the cost of a parallel commit, and otherwise it is
-not a divergence (\S\ref{sec:protocol}). What is lost without a
-joint is a single quantity that deserves the name total correlation. Numbers measured
-on one GPU type need not reproduce bit for bit on another: on identical blocks $B$
-differs between the A100 and the GB10 by a mean of $0.04$ to $0.19$ bits per setting and by up to $3.5$ bits on single Dream blocks.
+\paragraph{$\Chat$ is not always a total correlation.} Without a single joint there is
+no single quantity that deserves the name total correlation, and $\Chat$ can understate
+the KL cost of a commit or fail to measure it (\S\ref{sec:meaning}).
 
-\paragraph{What the residual bounds, and what it does not.} Our predictor reads
-per-position top-$8$ probabilities and entropies. That subsumes every single-step rule we
-score, at any aggregation, but not the full marginal and not the cross-step stability
-rules of \cite{less,stability}, which read more than one decoding step. Within the class
-we fit, a better predictor could only move the residual down, so we state it as a bound
-and not an impossibility. Two things could undercut that and neither does. The winner is
-chosen over $40$ candidates on the same out-of-fold scores we report, which biases the
-residual downward, so we redo the analysis selecting on inner folds and scoring on outer
-ones, and it moves by at most $0.035$ bits (App.~\ref{app:nested}). Quadrupling $M$ to
-$256$ on LLaDA-base moves the residual by at most $0.034$ bits (App.~\ref{app:budget}),
-and the estimator recovers analytic $\C$ on the oracle.
+\paragraph{What the residual bounds.} Our predictor reads per-position top-$8$
+probabilities and entropies. That subsumes every single-step rule we score, at any
+aggregation, but not the full marginal and not the cross-step stability rules of
+\cite{less,stability}, which read more than one decoding step. A better predictor could
+only lower the residual, so we state it as an upper bound, not an impossibility. Choosing the winner over $40$
+candidates on the same out-of-fold scores we report biases the residual downward, but
+selecting on inner folds and scoring on outer ones moves it by at most $0.035$ bits
+(App.~\ref{app:nested}). Quadrupling $M$ to $256$ on LLaDA-base moves it by at most
+$0.034$ bits (App.~\ref{app:budget}).
 
-\paragraph{Scope.} $k{=}4$ blocks with $k{=}8$ as a check, greedy decoding, one
-$128$-token window per document, English prose and Python (App.~\ref{app:details}). These numbers describe one decoding step,
-not end-to-end generation quality, and they say nothing about which set a decoder should commit, since we score fixed contiguous blocks rather than the sets a rule would choose, and a deployed decoder may commit larger sets and
-sample rather than take the argmax. Four checkpoints across two families, run on raw text
-without chat formatting, which keeps inputs comparable but is not how an instruct model
-is deployed.
+\paragraph{Scope.} $k{=}4$ blocks with $k{=}8$ as a check, greedy reference decodes, one
+$128$-token window per document, English prose and Python (App.~\ref{app:details}).
+Four checkpoints across two families, run on raw text without chat formatting, which
+keeps inputs comparable but is not how an instruct model is deployed. These numbers
+describe one decoding step on fixed contiguous blocks, not end-to-end generation
+quality. A deployed decoder chooses its sets, may commit larger ones, and may sample
+rather than take the argmax. Numbers measured on one GPU type need not reproduce bit for bit on
+another (App.~\ref{app:probe}).
 
 \section{Conclusion}
 
-A rule reading per-position marginals cannot determine the dependency of a parallel
-commit, only bound it by $\C_{\max}\le W$. On four checkpoints from two families and two
-regimes, the marginals nevertheless predict the estimate $\Chat$ with a residual of
-$0.74$ to $1.17$ bits outside Dream-instruct, $1.8$ to $3.7$ times below a reference that
-ignores the coupling, mostly because real blocks use a stable fraction of their window.
-$\Chat$ ranks blocks like the KL cost of a parallel commit but sits below it on prose and
-in the deployed regime, and on Dream-instruct prose it does not measure that cost. What a
-dependency-aware decoder gains over a marginal rule is a different quantity, which needs a
-matched-compute decoding study.
+A rule that reads per-position marginals cannot determine the dependency of a parallel
+commit, only bound it by $W$. On real checkpoints that bound carries most of the
+information. On four checkpoints from two families, the marginals predict the estimate
+$\Chat$ with a residual of $0.74$ to $1.17$ bits outside Dream-instruct, $1.8$ to $3.7$
+times below a reference that ignores the coupling, mostly because real blocks use a
+stable fraction of their bound. How a rule pools over the set matters more than which
+statistic it reads. Two cautions apply. $\Chat$ ranks blocks like the KL cost of a
+parallel commit but sits below it on prose and in the suffix regime, and on
+Dream-instruct prose it does not measure that cost. And we score fixed sets, so what a
+dependency-aware decoder gains needs a matched-compute decoding study.
 
 Two widely used open dLLMs require opposite logit-position conventions. The wrong one
 collapses greedy prose on both families, yet a pipeline that never decodes text does not
@@ -525,154 +560,167 @@ see, and to report the check.
 \section{Experimental details}
 \label{app:details}
 
-\paragraph{Corpus.} $285$ documents: $121$ WikiText-103 articles (\texttt{wikitext-103-raw-v1},
-those with at least $600$ characters of body text) for English prose, and all $164$ OpenAI
-HumanEval problems for Python, which is the natural code domain for Dream-Coder. We take
-the first $128$ tokens of each document under the checkpoint's own tokenizer as one
-window. Documents shorter than $128$ tokens under a checkpoint's tokenizer are dropped, so Dream sees all $121$ prose documents and $126$ of the code problems ($247$ windows) and LLaDA sees $121$ and $137$ ($258$ windows).
+\paragraph{Corpus.} $285$ documents: for English prose, $121$ WikiText-103 articles of at
+least $600$ characters from \texttt{wikitext-103-raw-v1}, and for Python, all $164$ OpenAI
+HumanEval problems. The first $128$ tokens of each document under the
+checkpoint's own tokenizer form one window, and shorter documents are dropped, so Dream
+sees all $121$ prose documents and $126$ of the code problems ($247$ windows) and LLaDA
+sees $121$ and $137$ ($258$ windows).
 
 \paragraph{The two regimes.} A block is $k$ consecutive positions inside a window.
-\emph{Suffix} masks everything from the block to the end of the window, which is the
-deployed setting where a decoder faces a prompt and an otherwise empty canvas. One suffix
-block is taken per window, starting at the midpoint. \emph{Infill} masks only the block
-itself, so the model sees full right context. Up to two infill blocks are taken per
-window, at starts drawn without replacement from the window's second quarter onward and
-spaced $4k$ apart. Blocks are shuffled under seed $0$. The cap of $600$ per regime never binds, so suffix has one block per window and infill two, which gives $247$ or $258$ suffix blocks and $494$ or $516$ infill blocks.
+\emph{Suffix} masks everything from the block to the end of the window, as a decoder
+continuing a prompt sees it, with one block per window starting at its midpoint.
+\emph{Infill} masks only the block, with two blocks per window at random starts from the
+window's second quarter onward, spaced $4k$ apart. This gives $247$ or $258$ suffix
+blocks and $494$ or $516$ infill blocks per checkpoint.
 
 \paragraph{Estimator and diagnostics.} $M{=}64$ reveal orders for $\Chat$, $8$ orders for
 the chain-rule deviation, $8$ reference orders for the order-sensitivity control, and the
 top $8$ probabilities per position for the profile features. Reference decodes are
-greedy. The per-block standard error is $\mathrm{sd}_m(\hat H_{\pi_m})/\sqrt{M}$.
+greedy.
 
-\paragraph{Variance correction.} The meter is noisy, so
+\paragraph{Variance correction.} The estimator is noisy, so
 $\mathrm{Var}[\Chat]=\mathrm{Var}[\C]+\mathbb{E}[\mathrm{se}^2]$, and the same offset
 appears in any out-of-fold squared error. We subtract the measured
-$\mathbb{E}[\mathrm{se}^2]$ from both before forming an $R^2$ or a residual, which turns
-statements about $\Chat$ into statements about $\C$. A block counts as significantly
-negative when $\Chat<-2\,\mathrm{se}$.
+$\mathbb{E}[\mathrm{se}^2]$ from both before forming an $R^2$ or a residual.
 
-\paragraph{Predictors.} Five document-grouped folds under seed $0$, so every block of a
-document falls in the same fold and no document is split across train and test. Features
-are standardised. The sweep is $k$-NN with $k\in\{5,10,20,40\}$, used when $k<n/6$, and
-ridge with $\lambda\in\{0.1,1,10,100\}$ and an unpenalised intercept, over the five
-feature sets of Table~\ref{tab:explains}. App.~\ref{app:nested} repeats it with the
-selection nested inside inner folds.
+\paragraph{Predictors.} Five document-grouped folds under seed $0$, so no document is
+split across train and test. Features are standardised. The five feature sets are the
+minimum confidence, $B$, per-position confidence and entropy, the full profile
+(per-position top-$8$ probabilities and entropy, positions sorted by confidence), and the
+full profile with both scalars. The sweep is $k$-NN with $k\in\{5,10,20,40\}$, used when
+$k<n/6$, and ridge with $\lambda\in\{0.1,1,10,100\}$ and an unpenalised intercept, over
+all five sets, which gives $40$ candidates.
 
 \paragraph{Compute.} One A100 80GB. Both families run in \texttt{bfloat16} under
 \texttt{transformers} 4.46.2, which Dream's remote code requires. A full measurement run
-is roughly $4{,}700$ batched forward calls per checkpoint. Everything in
+takes $4{,}545$ batched forward calls per Dream checkpoint and $4{,}762$ per LLaDA
+checkpoint. Everything in
 \S\ref{sec:worstcase} and App.~\ref{app:oracle} is exact and runs on CPU.
 
 \paragraph{Availability.} Code, configurations, per-block results and the verification probe are at
 \url{https://github.com/DovudAsadov/dllm-total-correlation}, tag \texttt{paper-numbers}.
 
-\section{Gate outputs}
+\section{Readout gates}
 \label{app:gates}
-Table~\ref{tab:gates} gives gate 1 for every checkpoint: the measured readout offset
-against the documented one, the evidence at each $\delta$, and the margin over the
-runner-up. Table~\ref{tab:gatedetail} gives gate 2 in full, namely exact reproducibility
-across repeat calls and equivalence between scoring a sequence alone and inside a batch,
-together with the gate 3 decode.
+Table~\ref{tab:gates} gives gate 1 for every checkpoint, and Table~\ref{tab:gatedetail}
+gates 2 and 3 as run for the main measurement.
+
+\paragraph{Gate 2 in the main run and in the release.} The main run required two
+identical calls to return identical logits, and required that scoring a sequence alone
+or inside a batch move no argmax. Both held, although batch composition moves
+log-probabilities by up to $0.56$ (Table~\ref{tab:gatedetail}). The released gate is
+stricter: the two batch shapes the estimator combines must agree on every argmax and on
+$B$ to within $0.074$ bits RMS. On a second GPU all four checkpoints pass with
+the two shapes agreeing exactly. Scoring a sequence alone, which the measurement never does,
+flips $1$ of $64$ argmaxes on each Dream checkpoint (App.~\ref{app:probe}).
+
+\paragraph{Gate 3 in the main run and in the release.} The main run only required a
+non-empty decode. The released gate also requires a wrong offset to produce the collapse
+of \S\ref{sec:bugimpact}, and fails on any error.
 \input{tables/gates.tex}
 \input{tables/gate_detail.tex}
 
-\section{Why DiffusionGemma is not in this study}
-\label{app:gemma}
-An earlier version included
-DiffusionGemma-26B \cite{diffusiongemma}, whose commit behaviour has been instrumented
-elsewhere \cite{gemmacommit}. It does not belong: its technical report states that its
-denoising ``uses multinomial (or uniform) diffusion rather than masked diffusion'', it
-initialises its canvas with uniformly random tokens, and its configuration declares no
-mask token. There is no masked position to commit and no marginal-at-a-mask to read, so
-this paper's object is undefined for it.
+\section{Exact results: the worst case and the synthetic audit}
+\label{app:exact}
 
-\section{The worst-case fibre}
+\paragraph{The worst case in detail.}
 \label{app:fibre}
-Table~\ref{tab:nontightness} tabulates the width $\C_{\max}$ of \eqref{eq:width} at
-representative marginal profiles, by exact vertex enumeration for $k$ fair bits.
-\input{tables/nontightness.tex}
+The set of joints with a fixed marginal profile (a transportation polytope) is convex
+and compact. It always contains the product measure, so $\C=0$ is attainable. At the
+other end, a minimum-entropy coupling gives $\C_{\max}=B-\min_P H(P)$, and
+Eq.~\eqref{eq:width} follows from $H(P)\ge\max_i H(Y_i)\ge B/k$. When all marginals are equal, the joint that sets every position equal gives
+$\C=W=(k{-}1)H(Y_1)$, so the bound is attained. Because $\C$ is
+continuous on a connected set, every value between $0$ and $\C_{\max}$ is realised. The
+entropy $H$ is concave, so its minimum over the polytope is attained at a vertex, and
+for small $k$ we compute $\C_{\max}$ by exact vertex enumeration: $k$ fair bits span
+exactly $[0,k{-}1]$ bits. Table~\ref{tab:nontightness} gives $\C_{\max}$ at
+representative marginal profiles.
 
-\section{The exact audit}
+\paragraph{The exact audit.}
 \label{app:oracle}
-Table~\ref{tab:proxy} reports the six marginal rules scored against analytic $\C$ on the
-synthetic family of \S\ref{sec:oracle}, where enumerated and closed-form $\C$ agree to
-$1.6\times10^{-14}$ bits. It is the ranking that \S\ref{sec:fidelity} finds does not
-transfer to real checkpoints.
+To score the rules where $\C$ is known exactly we use the synthetic list-operation
+family of ParallelBench \cite{parallelbench} and its analytic $\C$. Enumerated and
+closed-form $\C$ agree to $1.6\times10^{-14}$ bits. Table~\ref{tab:proxy} gives the six
+marginal rules scored against it. Over the $355$ candidate sets the six rules collapse
+to four distinct rankings. Every rule also attains a perfect safe-set AUROC, but only
+because $\C=0$ holds on this family \emph{if and only if} $B=0$, so any certainty
+detector scores perfectly. We therefore treat the ranking as a hypothesis to test on
+real checkpoints, and \S\ref{sec:fidelity} finds that it does not hold there.
+\input{tables/nontightness.tex}
 \input{tables/oracle_audit.tex}
 
-\section{Controls}
-\label{app:controls}
-Table~\ref{tab:controls} reports the per-setting diagnostics referenced in
-\S\ref{sec:fidelity}: the chain-rule deviation, the conditional-sensitivity check that
-distinguishes a composable joint from a degenerate one, the reference-order sensitivity
-of the usual outcome variable, and the structural invariant.
-\input{tables/controls.tex}
+\section{Robustness of the residual}
+\label{app:robust}
+Three checks on the residuals of \S\ref{sec:explains}.
 
-\section{Estimator budget: convergence and sensitivity in $M$}
+\paragraph{Estimator budget.}
 \label{app:budget}
-Table~\ref{tab:meter} reports the estimator's convergence in the number of sampled
-reveal orders $M$, on a fixed set of $48$ deployed-regime blocks per base checkpoint.
-Each smaller $M$ reuses the first $M$ of the same $256$ orders, which the caption accounts for. Table~\ref{tab:msens}
-asks the separate question of whether the budget changes the answer, and repeats the
-analysis at $M{=}256$ on the same blocks as the main run.
-\input{tables/convergence.tex}
-\input{tables/m_sensitivity.tex}
+Table~\ref{tab:meter} traces the estimator's convergence in $M$ on $48$ suffix-regime
+blocks per base checkpoint, and Table~\ref{tab:msens} repeats the analysis at $M{=}256$
+on the main run's blocks.
 
-\section{Block size: the $k{=}8$ replication}
+\paragraph{Block size.}
 \label{app:k8}
 Table~\ref{tab:k8} gives the per-setting numbers that \S\ref{sec:explains} quotes as
 ranges, for blocks of eight positions on the two base checkpoints.
-\input{tables/k8.tex}
 
-\section{Selecting the predictor without a winner's curse}
+\paragraph{Selecting the predictor without a winner's curse.}
 \label{app:nested}
 Table~\ref{tab:nested} repeats the analysis of \S\ref{sec:explains} with the model and
-feature-set selection nested inside its own folds, so no block's outcome influences the
-predictor that is later scored on it. This is the check that the residual is not an
-artifact of choosing the winner on the same numbers we report.
+feature-set selection nested inside its own folds.
+\input{tables/convergence.tex}
+\input{tables/m_sensitivity.tex}
+\input{tables/k8.tex}
 \input{tables/nested.tex}
 
-\section{Correction analyses}
+\section{Further results: domains, paired comparisons and controls}
 \label{app:corrections}
 Table~\ref{tab:domain} splits the residual and the ill-defined blocks by domain, and
 Table~\ref{tab:paired} gives the paired comparisons behind \S\ref{sec:fidelity} and the
 partial correlations behind \S\ref{sec:explains}.
+\label{app:controls}
+Table~\ref{tab:controls} gives the per-setting diagnostics.
+
+\paragraph{Decoding error is a weak stand-in for $\Chat$.} Parallel-commit error is
+usually measured as the disagreement between a parallel commit and a sequential
+reference decode. In the suffix regime that variable is not well defined: a greedy
+reference decoded under $8$ different reveal orders yields a median of $2$ distinct
+assignments, with pairwise disagreement $0.21$ to $0.31$. In the infill regime it is
+order-invariant.
+
+\paragraph{Other controls.} Every checkpoint reacts to what is filled in, with a median
+total-variation distance of $0.31$ to $0.37$ in the suffix regime and $0.05$ to $0.08$
+in infill. The structural invariant of \S\ref{sec:bugimpact} holds on all $3{,}030$
+blocks.
 \input{tables/domain.tex}
 \input{tables/paired.tex}
+\input{tables/controls.tex}
 
 \section{Verification on a second GPU}
 \label{app:probe}
-We reran the estimator on a subset of blocks with \texttt{scripts/verify/probe.py} on an
-NVIDIA GB10, with the checkpoints and blocks of the main run, to measure both terms of
-\eqref{eq:orderinfo} and to test the gates where the main run did not. For each of $32$
-sampled assignments per block we score all $4!$ reveal orders from the $14$ partially
-revealed canvases, which gives $I(\pi;Y_S)$ up to Monte Carlo error, and we score the
-samples under the parallel marginals, which gives the KL version. Table~\ref{tab:probe}
-gives medians over all probed blocks, which oversample flagged ones, and over the random
-blocks alone. On the random blocks, the per-order KL cost exceeds $\Chat$ by a median of
-$0.4$ to $1.1$ bits on prose and in the deployed regime of LLaDA-base and Dream-base
-($6$ to $13$ blocks per cell), $\Chat$ ranks blocks like it (Spearman $0.95$ and $0.90$,
-pooled across settings), the median order information is at most $0.98$ bits, and on
-Dream-instruct prose the gap is $4.4$ and $5.6$ bits.
+We reran the estimator with \texttt{scripts/verify/probe.py} on an NVIDIA GB10, on a
+subset of the main run's blocks, to measure both terms of \eqref{eq:orderinfo}
+(Table~\ref{tab:probe}) and to test the gates where the main run did not. The gaps quoted
+in \S\ref{sec:meaning} use the random blocks ($6$ to $13$ blocks per cell), with the
+Spearman correlations pooled across settings, and the median order information there is
+at most $0.98$ bits.
 
-The offset gate also holds on code: on HumanEval windows it selects the documented
-convention by $12.6$ to $15.9$ bits, against $6.9$ to $11.0$ on prose. At a wrong offset
-greedy decoding of prose collapses on all three checkpoints, and the calibrated decode never
-repeats a token more than $3$ times in a row. Scoring a block alone instead of in a batch
-of eight leaves LLaDA's entropies unchanged and moves Dream's by up to $3.3$ bits at a
-single position. Gate 2 with its entropy tolerance (\texttt{scripts/verify/gate2.py},
-$16$ prose and code windows in both regimes) passes on all four checkpoints: the
-estimator's two batch shapes give identical entropies and argmaxes, while scoring a
-sequence alone moves Dream-base by up to $11.3$ bits of entropy at one position. Taking $B$ from the estimator's own first forward pass instead of the
-batch of eight changes $2$ of the $197$ impossibility flags, both on Dream-instruct, and
-$80$ of the $101$ blocks the main run flagged as outside $[0,W]$ are outside it again
-($39$ of $53$ outside Dream-instruct). On the near-deterministic blocks flagged below
-zero, the KL version, whose expectation cannot be negative, is below minus two standard
-errors on $16$ of $38$, by up to $0.23$ bits. The per-block standard error under-covers
-there: when the sampled paths nearly coincide it is close to zero and misses the rare
-branches that keep the expectation nonnegative. $B$ for identical blocks differs between the A100 and
-the GB10 by a mean of $0.04$ to $0.19$ bits per setting and by up to $3.5$ bits on single
-Dream blocks.
+On HumanEval windows the offset gate selects the documented convention by $12.6$ to
+$15.9$ bits, against $6.9$ to $11.0$ on prose. Gate 2 with its entropy tolerance
+(\texttt{scripts/verify/gate2.py}, $16$ prose and code windows in both regimes) passes on
+all four checkpoints, and scoring a sequence alone, which the measurement never does,
+moves Dream-base by up to $11.3$ bits of entropy at one position. Taking $B$ from the
+estimator's own first forward pass instead of the batch of eight changes $2$ of the
+$197$ impossibility flags, and $80$ of the $101$ blocks the main run flagged as outside
+$[0,W]$ are outside it again ($39$ of $53$ outside Dream-instruct). On nearly deterministic blocks the per-block standard error under-covers: the sampled
+paths almost coincide, so it is close to zero and misses the rare branches. Even the KL
+cost, which cannot be negative in expectation, shows it. On the near-deterministic
+blocks flagged below zero, the KL version is below minus two standard errors on $16$ of $38$, by up to $0.23$ bits.
+
+\paragraph{Reproducibility across GPUs.} On identical blocks $B$ differs between the
+A100 and the GB10 by a mean of $0.04$ to $0.19$ bits per setting and by up to $3.5$ bits
+on single Dream blocks.
 \input{tables/probe.tex}
 
 \end{document}

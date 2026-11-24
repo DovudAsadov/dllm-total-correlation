@@ -82,22 +82,27 @@ def fig_gates_and_bug():
             c = v["chain_rule_deviation_bits"]
             wrong.append(c["wrong_offset"]); right.append(c["right_offset"])
             d = v["rho_conf_disagree"]
-            rw.append(d["wrong_offset"][0]); rr.append(d["right_offset"][0])
+            rw.append(d["wrong_offset"]); rr.append(d["right_offset"][0])
     if labels:
         xx = np.arange(len(labels))
-        ax[1].bar(xx - 0.19, wrong, 0.38, label="misaligned readout", color="#c0392b")
-        ax[1].bar(xx + 0.19, right, 0.38, label="validated readout", color="#27ae60")
+        ax[1].bar(xx - 0.19, wrong, 0.38, label=r"wrong offset ($\delta=0$)", color="#c0392b")
+        ax[1].bar(xx + 0.19, right, 0.38, label=r"measured offset ($\delta=-1$)", color="#27ae60")
         ax[1].set_xticks(xx); ax[1].set_xticklabels(labels, fontsize=7.5)
         ax[1].set_ylabel("chain-rule deviation (bits)")
-        ax[1].set_title("(b) offset ablation: only the readout differs")
-        ax[1].set_ylim(top=max(wrong) * 1.42)
+        ax[1].set_title("(b) Dream read at the wrong offset")
+        ax[1].set_ylim(top=max(wrong) * 1.3)
         ax[1].legend(fontsize=7.5, loc="upper center", ncol=2, framealpha=0.95)
-        for i, (a_, b_) in enumerate(zip(rw, rr)):
+        for i, ((a_, lo_, hi_), b_) in enumerate(zip(rw, rr)):
+            # a sign change is a flip only if the misaligned interval excludes zero,
+            # otherwise the misaligned readout erased the correlation
             flip = (a_ > 0) != (b_ > 0)
-            ax[1].annotate(rf"$\rho$ {a_:+.2f}$\to${b_:+.2f}" + ("  (flip)" if flip else ""),
-                           (i - 0.19, wrong[i]), textcoords="offset points",
-                           xytext=(0, 4 + 11 * (i % 2)),   # stagger: labels collide otherwise
-                           ha="center", fontsize=6.4,
+            tag = ("\n(reversed)" if lo_ > 0 or hi_ < 0 else "\n(erased)") if flip else ""
+            # one line under each group, so nothing collides with the bars or the legend
+            ax[1].annotate(rf"$\rho$: {a_:+.2f} $\to$ {b_:+.2f}" + tag,
+                           (i, 0), xycoords=("data", "axes fraction"),
+                           textcoords="offset points", xytext=(0, -31),
+                           ha="center", va="top", fontsize=6.6, annotation_clip=False,
+                           linespacing=1.25,
                            fontweight="bold" if flip else "normal",
                            color="#c0392b" if flip else "#333333")
     else:
@@ -132,12 +137,12 @@ def fig_explains():
             allf.append(C[W > 1] / W[W > 1])
     hi = ax[0].get_xlim()[1]
     xs = np.linspace(0, hi, 50)
-    ax[0].plot(xs, xs, "k--", lw=1.1, label=r"certified ceiling $\mathrm{C}=W$")
+    ax[0].plot(xs, xs, "k--", lw=1.1, label=r"the bound, $\mathrm{C}=W$")
     fmed = float(np.median(np.concatenate(allf)))
-    ax[0].plot(xs, fmed * xs, "k:", lw=1.1, label=rf"$\mathrm{{C}}={fmed:.2f}\,W$ (median)")
-    ax[0].set_xlabel(r"certified window $W=B-\max_i H(Y_i)$ (bits)")
+    ax[0].plot(xs, fmed * xs, "k:", lw=1.1, label=rf"median, $\mathrm{{C}}={fmed:.2f}\,W$")
+    ax[0].set_xlabel(r"bound $W=B-\max_i H(Y_i)$ (bits)")
     ax[0].set_ylabel(r"measured $\widehat{\mathrm{C}}$ (bits)")
-    ax[0].set_title("(a) real blocks inside the certified window")
+    ax[0].set_title("(a) real blocks use about half of the bound")
     ax[0].legend(fontsize=7.0, loc="upper left")
 
     # (b) the headline: best marginal-only prediction of C against the truth
@@ -182,13 +187,13 @@ def fig_explains():
         e = A["explains_C"][k]
         ax[1].scatter(best[1], y, s=6, alpha=0.3, color=COL[t], lw=0,
                       label=f"{SHORT[t]} {rg}: "
-                            f"{100*(1-e['frac_variance_invisible_to_marginals']):.0f}%, "
-                            f"$\\pm${e['unexplained_sd_bits']:.2f} b")
+                            f"{100*(1-e['frac_variance_invisible_to_marginals']):.0f}% var., "
+                            f"residual {e['unexplained_sd_bits']:.2f} b")
     lim = max(ax[1].get_xlim()[1], ax[1].get_ylim()[1])
     ax[1].plot([0, lim], [0, lim], "k--", lw=1.0)
-    ax[1].set_xlabel(r"predicted $\mathrm{C}$ from marginals alone (bits)")
+    ax[1].set_xlabel(r"predicted $\widehat{\mathrm{C}}$ from the marginals alone (bits)")
     ax[1].set_ylabel(r"measured $\widehat{\mathrm{C}}$ (bits)")
-    ax[1].set_title("(b) out-of-fold, document-grouped")
+    ax[1].set_title("(b) predicted against measured, out-of-fold")
     ax[1].legend(fontsize=6.6, loc="upper left")
     fig.tight_layout()
     for e in ("pdf", "png"):

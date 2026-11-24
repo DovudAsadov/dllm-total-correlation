@@ -71,19 +71,11 @@ def gate_detail():
 \centering
 \footnotesize
 \setlength{\tabcolsep}{4pt}
-\caption{\textbf{Gate 2 and gate 3, in full.} Table~\ref{tab:gates} reports gate 1.
-\emph{repeat}: maximum absolute difference in log-probability between two identical
-forward calls, and the argmax flips that difference causes. \emph{batch}: the same
-comparison between scoring a sequence alone and scoring it inside a batch. Exact
-reproducibility on repeat calls is what the proxy audit needs, because a nondeterministic
-forward flips argmaxes preferentially where confidence is low and so manufactures the
-negative confidence-error correlation the audit is trying to detect. The gate requires
-identical repeat calls and no alone-versus-batch argmax flip. It does not bound the
-alone-versus-batch change in log-probability, which is nonzero, and that change reaches
-the entropies the estimator uses (App.~\ref{app:probe}). Repeat calls compare $8$
-sequences ($32$ positions), the alone-versus-batch column one sequence ($4$ positions).
-Gate 3 is the first tokens greedy-decoded into an all-masked canvas using the calibrated
-offset, truncated for width.}
+\caption{\textbf{Gates 2 and 3, as run for the main measurement.} \emph{repeat call}:
+largest log-probability difference between two identical forward calls over $8$
+sequences, and the argmax flips it causes. \emph{alone vs batch}: the same for one
+sequence scored alone and inside a batch. \emph{gate 3}: the start of a greedy decode
+into an all-masked canvas.}
 \label{tab:gatedetail}
 \begin{tabular}{lrrrrl}
 \toprule
@@ -120,17 +112,13 @@ def k8():
 \centering
 \small
 \setlength{\tabcolsep}{5pt}
-\caption{\textbf{The $k{=}8$ replication, per setting.} \S\ref{sec:explains} quotes these
-as ranges. Same corpus, same protocol, same estimator, blocks of eight positions instead
-of four, on the two base checkpoints. The last two columns give the median certified
-window $W=B-\max_i H(Y_i)$ and the residual of the coupling-agnostic reference of
-Table~\ref{tab:explains} at $k{=}8$, which knows the marginal entropies but not the
-coupling. The $k{=}4$ column repeats Table~\ref{tab:explains} for comparison on the same
-checkpoint and regime.}
+\caption{\textbf{The $k{=}8$ replication, per setting.} The protocol of
+Table~\ref{tab:explains} with blocks of eight positions on the two base checkpoints, next
+to the $k{=}4$ residual. $W$ and \emph{reference} as in Table~\ref{tab:explains}.}
 \label{tab:k8}
 \begin{tabular}{lrrrrrrr}
 \toprule
- & & \multicolumn{1}{c}{$\Chat$} & \% Var & \multicolumn{2}{c}{unexpl.\ (bits)} & window & ref. \\
+ & & \multicolumn{1}{c}{$\Chat$} & \% Var & \multicolumn{2}{c}{residual (bits)} & bound & reference \\
 \cmidrule(lr){5-6}
 Model / regime & $n$ & mean & expl. & $k{=}8$ & $k{=}4$ & $W$ & (bits) \\
 \midrule
@@ -161,20 +149,14 @@ def msens():
 \centering
 \small
 \setlength{\tabcolsep}{4.5pt}
-\caption{\textbf{The estimator budget does not carry the headline.} Quadrupling the
-number of reveal orders from $M{=}""" + str(lo) + r"""$ to $M{=}""" + str(hi) + r"""$ on
-the \emph{same} blocks. The per-block standard error halves, as $1/\sqrt{M}$ predicts,
-and the reported residual moves by at most $0.034$ bits. Note this is a different
-experiment from Table~\ref{tab:meter}, which traces the convergence curve on a smaller
-fixed set of $48$ blocks, so the standard errors are not directly comparable between the
-two tables. \emph{rank agr.}: Spearman correlation between the two estimates of
-$\mathrm{C}$ across blocks, i.e.\ whether the two budgets order the blocks the same way.
-The two runs also differ in batch composition, $8$ blocks per batch at $M{=}64$ and $4$ at
-$M{=}256$, so this tests the budget and the batch shape together.}
+\caption{\textbf{The estimator budget does not carry the headline.} The same blocks at
+$M{=}""" + str(lo) + r"""$ and $M{=}""" + str(hi) + r"""$ reveal orders. \emph{rank agr.}:
+Spearman correlation of the two estimates across blocks. The runs also differ in batch
+size, $8$ and $4$ blocks, so this tests budget and batch shape together.}
 \label{tab:msens}
 \begin{tabular}{lrrrrrrr}
 \toprule
- & & \multicolumn{2}{c}{meter s.e.\ (bits)} & \multicolumn{2}{c}{residual (bits)} & & \\
+ & & \multicolumn{2}{c}{estimator s.e.\ (bits)} & \multicolumn{2}{c}{residual (bits)} & & \\
 \cmidrule(lr){3-4}\cmidrule(lr){5-6}
 Model / regime & $n$ & $M{=}""" + str(lo) + r"""$ & $M{=}""" + str(hi) + r"""$ & $M{=}""" + str(lo) + r"""$ & $M{=}""" + str(hi) + r"""$ & $|\Delta|$ & rank agr. \\
 \midrule
@@ -204,17 +186,11 @@ def nested():
 \centering
 \small
 \setlength{\tabcolsep}{5pt}
-\caption{\textbf{What selecting the predictor costs.} Every prediction behind
-Table~\ref{tab:explains} is out-of-fold, but the winning feature set and model are chosen
-over $""" + str(s["n_candidates"]) + r"""$ candidates using those same out-of-fold
-scores, which biases the residual downward. That bias runs the wrong way for an upper
-bound, so we price it rather than assume it away: \emph{nested} repeats the whole
-procedure with $""" + str(s["n_folds_outer"]) + r"""$ outer document-grouped folds for
-evaluation and $""" + str(s["n_folds_inner"]) + r"""$ inner folds for selection, so no
-block's outcome ever influences the model that predicts it. The largest movement across
-the eight settings is $""" + f"{s['max_delta_bits']:+.3f}" + r"""$ bits, and the range of
-residuals is unchanged at two decimal places. \emph{selected}: the feature set and model
-the inner folds chose most often.}
+\caption{\textbf{What selecting the predictor costs.} The residual of
+Table~\ref{tab:explains} (\emph{reported}) against the same procedure with the selection
+nested in $""" + str(s["n_folds_inner"]) + r"""$ inner folds within $""" + str(s["n_folds_outer"]) + r"""$ outer
+document-grouped folds (\emph{nested}). \emph{selected}: the feature set and model chosen
+most often.}
 \label{tab:nested}
 \begin{tabular}{lrrrrl}
 \toprule

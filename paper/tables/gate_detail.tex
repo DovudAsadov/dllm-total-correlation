@@ -2,20 +2,6 @@
 \centering
 \footnotesize
 \setlength{\tabcolsep}{4pt}
-\caption{\textbf{Gate 2 and gate 3, in full.} Table~\ref{tab:gates} reports gate 1.
-\emph{repeat}: maximum absolute difference in log-probability between two identical
-forward calls, and the argmax flips that difference causes. \emph{batch}: the same
-comparison between scoring a sequence alone and scoring it inside a batch. Exact
-reproducibility on repeat calls is what the proxy audit needs, because a nondeterministic
-forward flips argmaxes preferentially where confidence is low and so manufactures the
-negative confidence-error correlation the audit is trying to detect. The gate requires
-identical repeat calls and no alone-versus-batch argmax flip. It does not bound the
-alone-versus-batch change in log-probability, which is nonzero, and that change reaches
-the entropies the estimator uses (App.~\ref{app:probe}). Repeat calls compare $8$
-sequences ($32$ positions), the alone-versus-batch column one sequence ($4$ positions).
-Gate 3 is the first tokens greedy-decoded into an all-masked canvas using the calibrated
-offset, truncated for width.}
-\label{tab:gatedetail}
 \begin{tabular}{lrrrrl}
 \toprule
  & \multicolumn{2}{c}{repeat call} & \multicolumn{2}{c}{alone vs batch} & gate 3 \\
@@ -28,4 +14,9 @@ LLaDA base & $0$ & $0$ & $0.281$ & $0$ & \texttt{\footnotesize Theatre . He has 
 LLaDA instr. & $0$ & $0$ & $0.224$ & $0$ & \texttt{\footnotesize Theatre in London . He has also appear\,\ldots} \\
 \bottomrule
 \end{tabular}
+\caption{\textbf{Gates 2 and 3, as run for the main measurement.} \emph{repeat call}:
+largest log-probability difference between two identical forward calls over $8$
+sequences, and the argmax flips it causes. \emph{alone vs batch}: the same for one
+sequence scored alone and inside a batch. \emph{gate 3}: the start of a greedy decode
+into an all-masked canvas.}\label{tab:gatedetail}
 \end{table}

@@ -55,22 +55,10 @@ Model & measured & documented & $\delta{=}{-}1$ & $\delta{=}0$ & $\delta{=}{+}1$
 """ + "\n".join(" & ".join(r) + r" \\" for r in rows) + r"""
 \bottomrule
 \end{tabular}
-\caption{\textbf{The readout convention is measured, not assumed.} We mask a $k{=}4$
-block and score the log-probability the model gives the tokens that were actually there,
-reading at index $p{+}\delta$. The true tokens are hidden, so a bidirectional model
-cannot score well by copying, and only the correct convention wins. The gate recovers
-each checkpoint's documented convention without being told it, and the two families are
-\emph{opposite}: Dream keeps the autoregressive shift of the backbone it was initialised
-from, LLaDA predicts masked tokens in place. The two Dream rows are the Dream-Coder
-checkpoints \cite{dreamcoder}, adapted from an autoregressive backbone by the recipe of
-\cite{dream}, and the gate finds they keep its shift. ``gap'' is the winning $\delta$'s margin
-over the runner-up in bits, at $k{=}4$ (the block size of the three columns before it)
-and with one hidden token ($k{=}1$). The gate requires both to exceed one bit. ``flips'' counts argmax changes
-between two identical forward calls. Any nonzero value would be a noise floor that
-correlates with confidence and therefore contaminates a proxy audit. Reading Dream at
-$\delta{=}0$, the convention our own earlier version used, costs
-$6.9$ bits of log-probability on the correct token at $k{=}1$ and $8.4$ at $k{=}4$, a
-factor of ${\sim}120$ or more in probability (\S\ref{sec:bugimpact}).}
+\caption{\textbf{Gate 1: the readout offset is measured, not assumed.} Log-probability of
+the hidden true tokens of a masked $k{=}4$ block, read at index $p{+}\delta$. \emph{gap}: margin of the winning $\delta$ over the
+runner-up, at $k{=}4$ and with one hidden token. \emph{flips}: argmax changes between two
+identical forward calls.}
 \label{tab:gates}
 \end{table}
 """

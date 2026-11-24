@@ -2,17 +2,9 @@
 \centering
 \small
 \setlength{\tabcolsep}{5pt}
-\caption{\textbf{The $k{=}8$ replication, per setting.} \S\ref{sec:explains} quotes these
-as ranges. Same corpus, same protocol, same estimator, blocks of eight positions instead
-of four, on the two base checkpoints. The last two columns give the median certified
-window $W=B-\max_i H(Y_i)$ and the residual of the coupling-agnostic reference of
-Table~\ref{tab:explains} at $k{=}8$, which knows the marginal entropies but not the
-coupling. The $k{=}4$ column repeats Table~\ref{tab:explains} for comparison on the same
-checkpoint and regime.}
-\label{tab:k8}
 \begin{tabular}{lrrrrrrr}
 \toprule
- & & \multicolumn{1}{c}{$\Chat$} & \% Var & \multicolumn{2}{c}{unexpl.\ (bits)} & window & ref. \\
+ & & \multicolumn{1}{c}{$\Chat$} & \% Var & \multicolumn{2}{c}{residual (bits)} & bound & reference \\
 \cmidrule(lr){5-6}
 Model / regime & $n$ & mean & expl. & $k{=}8$ & $k{=}4$ & $W$ & (bits) \\
 \midrule
@@ -22,4 +14,7 @@ LLaDA base / infill & $250$ & $9.31$ & $96$ & $1.60$ & $0.74$ & $14.5$ & $6.12$ 
 LLaDA base / suffix & $250$ & $18.29$ & $92$ & $2.14$ & $1.05$ & $36.2$ & $10.64$ \\
 \bottomrule
 \end{tabular}
+\caption{\textbf{The $k{=}8$ replication, per setting.} The protocol of
+Table~\ref{tab:explains} with blocks of eight positions on the two base checkpoints, next
+to the $k{=}4$ residual. $W$ and \emph{reference} as in Table~\ref{tab:explains}.}\label{tab:k8}
 \end{table}

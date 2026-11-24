@@ -2,24 +2,11 @@
 \centering
 \footnotesize
 \setlength{\tabcolsep}{3.5pt}
-\caption{\textbf{Paired comparisons, and what the rules see beyond certainty.} The first
-three columns are paired, document-clustered bootstraps ($2{,}000$ resamples) of
-$\rho(\text{first rule},\widehat{\mathrm{C}})-\rho(\text{second rule},\widehat{\mathrm{C}})$
-on the same blocks, positive where the second rule is the better one. $^{*}$ marks
-intervals excluding zero. \emph{pooled vs min}: the largest upper end, over the three
-statistics, of the interval for pooled minus min. Negative throughout means pooling
-wins every one of the $24$ paired comparisons. The last two columns are the smallest and
-largest partial Spearman correlation, over the six rules, of a rule with
-$\widehat{\mathrm{C}}$ given the window $W$ (per-rule values and intervals are in
-\texttt{results/e5v3\_corrections.json}). Without conditioning the pooled rules reach $\rho$
-of $-0.83$ to $-0.94$ outside Dream-instruct (Table~\ref{tab:fidelity}), so most of what a
-rule knows about $\mathrm{C}$ is the width of the window it certifies.}
-\label{tab:paired}
 \begin{tabular}{lrrrrrr}
 \toprule
- & marg$-$conf & marg$-$conf & negH$-$conf & pooled vs & \multicolumn{2}{c}{partial $\rho$ given $W$} \\
+ & marg$-$conf & marg$-$conf & negH$-$conf & pooled$-$min & \multicolumn{2}{c}{partial $\rho$ given $W$} \\
 \cmidrule(lr){6-7}
-Model / regime & (min) & (mean) & (sum vs mean) & min (max hi) & \multicolumn{2}{c}{over the six rules} \\
+Model / regime & (min) & (mean) & (sum vs mean) & (upper end) & \multicolumn{2}{c}{over the six rules} \\
 \midrule
 Dream base / infill & $+0.033$$^{*}$ & $+0.004$ & $-0.000$ & $-0.048$ & $-0.14$ & $+0.04$ \\
 Dream base / suffix & $+0.140$$^{*}$ & $+0.037$$^{*}$ & $+0.017$ & $-0.063$ & $-0.28$ & $+0.21$ \\
@@ -31,4 +18,11 @@ LLaDA instr. / infill & $+0.041$$^{*}$ & $+0.010$$^{*}$ & $-0.017$$^{*}$ & $-0.0
 LLaDA instr. / suffix & $+0.144$$^{*}$ & $+0.046$$^{*}$ & $-0.012$ & $-0.072$ & $-0.18$ & $+0.22$ \\
 \bottomrule
 \end{tabular}
+\caption{\textbf{Paired comparisons, and what the rules see beyond certainty.} First three
+columns: paired document-clustered bootstrap of
+$\rho(\text{first},\widehat{\mathrm{C}})-\rho(\text{second},\widehat{\mathrm{C}})$,
+positive where the second rule is better, $^{*}$ where the interval excludes zero.
+\emph{pooled vs min}: largest upper end of the three pooled-minus-min intervals, negative
+where pooling wins all three. Last two columns: range over the six rules of the partial
+Spearman correlation with $\widehat{\mathrm{C}}$ given $W$.}\label{tab:paired}
 \end{table}
