@@ -50,46 +50,6 @@ def gate_records():
     return G
 
 
-def gate_detail():
-    G = gate_records()
-    rows = []
-    for t in TAGS:
-        m = G.get(t)
-        if not m or "error" in m:
-            continue
-        d = m["determinism"]
-        sample = " ".join(m["fluency_sample"].split())[:38].replace("&", r"\&") + r"\,\ldots"
-        rows.append(" & ".join([
-            LAB[t],
-            f"${d['repeat_call_max_abs_logprob_diff']:.3g}$",
-            f"${d['repeat_call_argmax_flips']}$",
-            f"${d['batch1_vs_batchN_max_abs_logprob_diff']:.3f}$",
-            f"${d['batch_size_argmax_flips']}$",
-            r"\texttt{\footnotesize " + sample.replace("_", r"\_").replace("#", r"\#") + r"}",
-        ]) + r" \\")
-    return r"""\begin{table}[!ht]
-\centering
-\footnotesize
-\setlength{\tabcolsep}{4pt}
-\caption{\textbf{Gates 2 and 3, as run for the main measurement.} \emph{repeat call}:
-largest log-probability difference between two identical forward calls over $8$
-sequences, and the argmax flips it causes. \emph{alone vs batch}: the same for one
-sequence scored alone and inside a batch. \emph{gate 3}: the start of a greedy decode
-into an all-masked canvas.}
-\label{tab:gatedetail}
-\begin{tabular}{lrrrrl}
-\toprule
- & \multicolumn{2}{c}{repeat call} & \multicolumn{2}{c}{alone vs batch} & gate 3 \\
-\cmidrule(lr){2-3}\cmidrule(lr){4-5}
-Model & max $\Delta$ & flips & max $\Delta$ & flips & greedy decode \\
-\midrule
-""" + "\n".join(rows) + r"""
-\bottomrule
-\end{tabular}
-\end{table}
-"""
-
-
 # ------------------------------------------------------------- the k=8 replication
 def k8():
     K = json.load(open(os.path.join(RES, "e5v3_analysis_k8.json")))["explains_C"]
@@ -110,7 +70,7 @@ def k8():
         ]) + r" \\")
     return r"""\begin{table}[!ht]
 \centering
-\small
+\footnotesize
 \setlength{\tabcolsep}{5pt}
 \caption{\textbf{The $k{=}8$ replication, per setting.} The protocol of
 Table~\ref{tab:explains} with blocks of eight positions on the two base checkpoints, next
@@ -147,7 +107,7 @@ def msens():
         ]) + r" \\")
     return r"""\begin{table}[!ht]
 \centering
-\small
+\footnotesize
 \setlength{\tabcolsep}{4.5pt}
 \caption{\textbf{The estimator budget does not carry the headline.} The same blocks at
 $M{=}""" + str(lo) + r"""$ and $M{=}""" + str(hi) + r"""$ reveal orders. \emph{rank agr.}:
@@ -180,23 +140,21 @@ def nested():
             f"${v['reported_residual_sd_bits']:.3f}$",
             f"${v['residual_sd_bits']:.3f}$",
             f"${v['delta_bits']:+.3f}$",
-            r"\texttt{\footnotesize " + v["selected_most_often"].replace("_", r"\_") + r"}",
         ]) + r" \\")
     return r"""\begin{table}[!ht]
 \centering
-\small
+\footnotesize
 \setlength{\tabcolsep}{5pt}
 \caption{\textbf{What selecting the predictor costs.} The residual of
 Table~\ref{tab:explains} (\emph{reported}) against the same procedure with the selection
 nested in $""" + str(s["n_folds_inner"]) + r"""$ inner folds within $""" + str(s["n_folds_outer"]) + r"""$ outer
-document-grouped folds (\emph{nested}). \emph{selected}: the feature set and model chosen
-most often.}
+document-grouped folds (\emph{nested}).}
 \label{tab:nested}
-\begin{tabular}{lrrrrl}
+\begin{tabular}{lrrrr}
 \toprule
- & & \multicolumn{2}{c}{residual (bits)} & & \\
+ & & \multicolumn{2}{c}{residual (bits)} & \\
 \cmidrule(lr){3-4}
-Model / regime & $n$ & reported & nested & $\Delta$ & selected \\
+Model / regime & $n$ & reported & nested & $\Delta$ \\
 \midrule
 """ + "\n".join(rows) + r"""
 \bottomrule
@@ -206,7 +164,6 @@ Model / regime & $n$ & reported & nested & $\Delta$ & selected \\
 
 
 if __name__ == "__main__":
-    write("tables/gate_detail.tex", gate_detail())
     write("tables/k8.tex", k8())
     write("tables/m_sensitivity.tex", msens())
     write("tables/nested.tex", nested())

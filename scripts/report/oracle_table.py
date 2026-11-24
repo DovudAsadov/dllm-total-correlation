@@ -236,7 +236,7 @@ open(os.path.join(PAPER, "tables/oracle_audit.md"), "w").write(md_txt + "\n")
 tex = [
     r"\begin{table}[!ht]",
     r"\centering",
-    r"\small",
+    r"\footnotesize",
     r"\setlength{\tabcolsep}{4pt}",
     r"\begin{tabular}{lrrrr}",
     r"\toprule",

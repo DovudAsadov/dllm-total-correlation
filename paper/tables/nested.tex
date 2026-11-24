@@ -1,26 +1,25 @@
 \begin{table}[!ht]
 \centering
-\small
+\footnotesize
 \setlength{\tabcolsep}{5pt}
-\begin{tabular}{lrrrrl}
+\begin{tabular}{lrrrr}
 \toprule
- & & \multicolumn{2}{c}{residual (bits)} & & \\
+ & & \multicolumn{2}{c}{residual (bits)} & \\
 \cmidrule(lr){3-4}
-Model / regime & $n$ & reported & nested & $\Delta$ & selected \\
+Model / regime & $n$ & reported & nested & $\Delta$ \\
 \midrule
-Dream base / infill & $494$ & $1.129$ & $1.132$ & $+0.003$ & \texttt{\footnotesize profile\_plus\_scalars/ridge100} \\
-Dream base / suffix & $247$ & $1.090$ & $1.095$ & $+0.005$ & \texttt{\footnotesize per\_position\_conf\_entropy/ridge1} \\
-Dream instr. / infill & $494$ & $1.623$ & $1.633$ & $+0.010$ & \texttt{\footnotesize per\_position\_conf\_entropy/ridge10} \\
-Dream instr. / suffix & $247$ & $1.840$ & $1.845$ & $+0.005$ & \texttt{\footnotesize per\_position\_conf\_entropy/ridge1} \\
-LLaDA base / infill & $516$ & $0.742$ & $0.743$ & $+0.000$ & \texttt{\footnotesize per\_position\_conf\_entropy/ridge10} \\
-LLaDA base / suffix & $258$ & $1.055$ & $1.072$ & $+0.017$ & \texttt{\footnotesize profile\_plus\_scalars/ridge10} \\
-LLaDA instr. / infill & $516$ & $0.873$ & $0.908$ & $+0.035$ & \texttt{\footnotesize per\_position\_conf\_entropy/knn10} \\
-LLaDA instr. / suffix & $258$ & $1.174$ & $1.172$ & $-0.002$ & \texttt{\footnotesize per\_position\_conf\_entropy/ridge10} \\
+Dream base / infill & $494$ & $1.129$ & $1.132$ & $+0.003$ \\
+Dream base / suffix & $247$ & $1.090$ & $1.095$ & $+0.005$ \\
+Dream instr. / infill & $494$ & $1.623$ & $1.633$ & $+0.010$ \\
+Dream instr. / suffix & $247$ & $1.840$ & $1.845$ & $+0.005$ \\
+LLaDA base / infill & $516$ & $0.742$ & $0.743$ & $+0.000$ \\
+LLaDA base / suffix & $258$ & $1.055$ & $1.072$ & $+0.017$ \\
+LLaDA instr. / infill & $516$ & $0.873$ & $0.908$ & $+0.035$ \\
+LLaDA instr. / suffix & $258$ & $1.174$ & $1.172$ & $-0.002$ \\
 \bottomrule
 \end{tabular}
 \caption{\textbf{What selecting the predictor costs.} The residual of
 Table~\ref{tab:explains} (\emph{reported}) against the same procedure with the selection
 nested in $5$ inner folds within $5$ outer
-document-grouped folds (\emph{nested}). \emph{selected}: the feature set and model chosen
-most often.}\label{tab:nested}
+document-grouped folds (\emph{nested}).}\label{tab:nested}
 \end{table}

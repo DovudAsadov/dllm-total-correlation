@@ -591,7 +591,9 @@ claim("appendix quotes the largest alone-vs-batch entropy change",
 
 
 claim("author emails are on the title page, in author order",
-      in_tex_ws(r"\texttt{\{d.asadov, r.urokov, q.toshnazarov, a.kayumov, m.hazratov, h.mansuraliyev\}@newuu.uz}"))
+      (lambda _p: all(_x >= 0 for _x in _p) and _p == sorted(_p))(
+          [TEX.find(rf"\texttt{{{_e}@newuu.uz}}") for _e in
+           ("d.asadov", "r.urokov", "q.toshnazarov", "a.kayumov", "m.hazratov", "h.mansuraliyev")]))
 
 print(f"\n{checks - len(fails)}/{checks} claim checks passed")
 if fails:

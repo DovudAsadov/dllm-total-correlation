@@ -16,7 +16,8 @@
 \usepackage{xcolor}
 \usepackage{graphicx}
 \usepackage{caption}
-\captionsetup{font=small, skip=6pt}
+\usepackage{placeins}
+\captionsetup{font=small, skip=10pt}
 % Captions go below every table and figure. The style swaps the caption skips inside
 % `table` (it expects captions above), so restore the plain environment.
 \makeatletter
@@ -35,10 +36,29 @@
 Total Correlation in Diffusion LM Parallel Decoding}
 
 \author{%
-  \mdseries Dovud Asadov\thanks{Equal contribution.} \quad Rustambek Urokov\footnotemark[1] \quad Qobiljon Toshnazarov\\
-  Abduaziz Kayumov \quad Mardon Hazratov \quad Husanboy Mansuraliyev\\
+  Dovud Asadov\thanks{Equal contribution.}\\
   New Uzbekistan University\\
-  {\footnotesize\texttt{\{d.asadov, r.urokov, q.toshnazarov, a.kayumov, m.hazratov, h.mansuraliyev\}@newuu.uz}}
+  \texttt{d.asadov@newuu.uz}
+  \And
+  Rustambek Urokov\footnotemark[1]\\
+  New Uzbekistan University\\
+  \texttt{r.urokov@newuu.uz}
+  \And
+  Qobiljon Toshnazarov\\
+  New Uzbekistan University\\
+  \texttt{q.toshnazarov@newuu.uz}
+  \AND
+  Abduaziz Kayumov\\
+  New Uzbekistan University\\
+  \texttt{a.kayumov@newuu.uz}
+  \And
+  Mardon Hazratov\\
+  New Uzbekistan University\\
+  \texttt{m.hazratov@newuu.uz}
+  \And
+  Husanboy Mansuraliyev\\
+  New Uzbekistan University\\
+  \texttt{h.mansuraliyev@newuu.uz}
 }
 
 \begin{document}
@@ -174,8 +194,7 @@ allow, and it is all that a marginal rule can certify. In particular, the margin
 certify $\C=0$ if and only if at most one position of $S$ is uncertain.
 
 Inside $[0,\C_{\max}]$ the marginals decide nothing: every value is realised by some
-joint, and for equal marginals $\C_{\max}=W$ (App.~\ref{app:fibre},
-Table~\ref{tab:nontightness}).
+joint, and for equal marginals $\C_{\max}=W$ (App.~\ref{app:fibre}).
 
 \paragraph{Same marginals, different $\C$.} A clean example is $n$ fair coins against
 $n$ coins conditioned on exactly $n/2$ heads. Every coin is fair in both, so the
@@ -248,8 +267,7 @@ Everything we report rests on one contract: given a masked sequence and a positi
 return the model's distribution for the token at $p$. Three gates test that contract on
 every checkpoint before any number is produced.
 
-\paragraph{Gate 1: which logit index carries position $p$?} A dLLM's output need not be
-aligned with its own positions, and Dream and LLaDA differ (\S\ref{sec:intro}). We mask
+\paragraph{Gate 1: which logit index carries position $p$?} We mask
 a block and score the log-probability the model gives to the tokens that were
 \emph{actually} there, reading at index $p+\delta$ for $\delta\in\{-1,0,+1\}$. The true
 tokens are hidden, so the model cannot win by copying, and only the correct $\delta$
@@ -273,7 +291,7 @@ runs of at most $3$ at the calibrated offset (App.~\ref{app:probe}).
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.9\textwidth]{figures/fig1_gates.pdf}
+\includegraphics[width=0.86\textwidth]{figures/fig1_gates.pdf}
 \caption{\textbf{(a)} The offset gate: log-probability of the hidden true tokens, read
 at index $p+\delta$. Stars mark the convention the gate selects: Dream and LLaDA select
 \emph{opposite} ones. \textbf{(b)} The
@@ -305,6 +323,18 @@ correlation on one checkpoint and reverses it on the other. A reader would concl
 and $-4.8$ bits at the wrong offset, against $+0.78$ and $+0.05$ at the right one. No
 joint has $\C<0$, so a strongly negative estimate cannot be a finding. Here the
 estimator flags the error that the other two statistics hide.
+
+% Figure 2 is placed here so that it lands on the page where Section 4 starts.
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.86\textwidth]{figures/fig2_explains.pdf}
+\caption{\textbf{Suffix regime only.} The infill settings are in
+Table~\ref{tab:explains}. \textbf{(a)} Measured $\Chat$ against the bound
+$W=B-\max_i H(Y_i)$ of \eqref{eq:width}. The dashed line is $\C=W$ and the dotted line
+is the median fraction of $W$ outside Dream-instruct. \textbf{(b)} The best
+marginal-only prediction against measured $\Chat$, out-of-fold.}
+\label{fig:explains}
+\end{figure}
 
 \section{How much of $\C$ the marginals explain}
 \label{sec:explains}
@@ -362,18 +392,6 @@ $3.4$ to $5.0$ times below the reference, against $1.8$ to $3.7$ times at $k{=}4
 (Table~\ref{tab:k8}).
 
 
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.9\textwidth]{figures/fig2_explains.pdf}
-\caption{\textbf{Suffix regime only.} The infill settings are in
-Table~\ref{tab:explains}. \textbf{(a)} Measured $\Chat$ against the bound
-$W=B-\max_i H(Y_i)$ of \eqref{eq:width}. The dashed line is $\C=W$ and the dotted line
-is the median fraction of $W$ outside Dream-instruct. \textbf{(b)} The best
-marginal-only prediction against measured $\Chat$, out-of-fold with document-grouped
-folds. The scatter about the diagonal is the residual.}
-\label{fig:explains}
-\end{figure}
 
 \input{tables/explains.tex}
 
@@ -505,8 +523,7 @@ dependency of a fixed set, not what such a decoder gains.
 \paragraph{Inconsistent conditionals.} That the conditionals of a masked language model
 need not compose into any joint is known \cite{mlminconsist}, with consequences for
 sampling \cite{glauber} and denoising order \cite{pathdenoise}. Our diagnostic, the
-chain-rule deviation, is from \cite{chainruledev}. We show that it is highly sensitive
-to a readout error (\S\ref{sec:bugimpact}).
+chain-rule deviation, is from \cite{chainruledev}.
 
 \section{Limitations}
 \label{sec:limitations}
@@ -557,6 +574,20 @@ see, and to report the check.
 
 \clearpage
 \appendix
+% Appendix tables are set where they are discussed when they fit, and otherwise at the
+% top of the next page while the text runs on, so no page is left half empty.
+\renewcommand{\topfraction}{0.9}\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.08}\renewcommand{\floatpagefraction}{0.85}
+\setcounter{topnumber}{3}\setcounter{bottomnumber}{2}\setcounter{totalnumber}{4}
+\makeatletter
+\renewenvironment{table}[1][]{\@float{table}[!htb]}{\end@float}
+% two related tables stacked in one float
+\newcommand{\tablestack}[2]{%
+  \@float{table}[!htb]%
+  \begingroup\renewenvironment{table}[1][]{\def\@captype{table}}{\par}%
+  \input{#1}\vspace{16pt}\input{#2}\endgroup
+  \end@float}
+\makeatother
 \section{Experimental details}
 \label{app:details}
 
@@ -603,23 +634,27 @@ checkpoint. Everything in
 
 \section{Readout gates}
 \label{app:gates}
-Table~\ref{tab:gates} gives gate 1 for every checkpoint, and Table~\ref{tab:gatedetail}
-gates 2 and 3 as run for the main measurement.
+Table~\ref{tab:gates} reports Gate 1 for every checkpoint: the log-probability of the
+hidden true tokens at each candidate offset, the offset the gate selects, and its margin
+over the runner-up. Every checkpoint selects its documented convention.
+\input{tables/gates.tex}
 
 \paragraph{Gate 2 in the main run and in the release.} The main run required two
 identical calls to return identical logits, and required that scoring a sequence alone
-or inside a batch move no argmax. Both held, although batch composition moves
-log-probabilities by up to $0.56$ (Table~\ref{tab:gatedetail}). The released gate is
-stricter: the two batch shapes the estimator combines must agree on every argmax and on
-$B$ to within $0.074$ bits RMS. On a second GPU all four checkpoints pass with
-the two shapes agreeing exactly. Scoring a sequence alone, which the measurement never does,
-flips $1$ of $64$ argmaxes on each Dream checkpoint (App.~\ref{app:probe}).
+or inside a batch move no argmax. Both held on all four checkpoints: two identical calls
+differed by exactly zero, and batch composition moved no argmax, although it moves
+log-probabilities by up to $0.56$ ($0.162$, $0.556$, $0.281$ and $0.224$ on Dream-base,
+Dream-instruct, LLaDA-base and LLaDA-instruct). The released gate is stricter: the two
+batch shapes the estimator combines must agree on every argmax and on $B$ to within
+$0.074$ bits RMS. On a second GPU all four checkpoints pass with the two shapes agreeing
+exactly. Scoring a sequence alone, which the measurement never does, flips $1$ of $64$
+argmaxes on each Dream checkpoint (App.~\ref{app:probe}).
 
 \paragraph{Gate 3 in the main run and in the release.} The main run only required a
-non-empty decode. The released gate also requires a wrong offset to produce the collapse
-of \S\ref{sec:bugimpact}, and fails on any error.
-\input{tables/gates.tex}
-\input{tables/gate_detail.tex}
+non-empty decode, and every checkpoint wrote fluent text at its calibrated offset. The
+Dream-base decode, for example, begins ``Theatre . In 2002 , he appeared in the''. The
+released gate also requires a wrong offset to produce the collapse of
+\S\ref{sec:bugimpact}, and fails on any error.
 
 \section{Exact results: the worst case and the synthetic audit}
 \label{app:exact}
@@ -629,13 +664,14 @@ of \S\ref{sec:bugimpact}, and fails on any error.
 The set of joints with a fixed marginal profile (a transportation polytope) is convex
 and compact. It always contains the product measure, so $\C=0$ is attainable. At the
 other end, a minimum-entropy coupling gives $\C_{\max}=B-\min_P H(P)$, and
-Eq.~\eqref{eq:width} follows from $H(P)\ge\max_i H(Y_i)\ge B/k$. When all marginals are equal, the joint that sets every position equal gives
-$\C=W=(k{-}1)H(Y_1)$, so the bound is attained. Because $\C$ is
-continuous on a connected set, every value between $0$ and $\C_{\max}$ is realised. The
-entropy $H$ is concave, so its minimum over the polytope is attained at a vertex, and
-for small $k$ we compute $\C_{\max}$ by exact vertex enumeration: $k$ fair bits span
-exactly $[0,k{-}1]$ bits. Table~\ref{tab:nontightness} gives $\C_{\max}$ at
-representative marginal profiles.
+Eq.~\eqref{eq:width} follows from $H(P)\ge\max_i H(Y_i)\ge B/k$. When all marginals are
+equal, the joint that sets every position equal gives $\C=W=(k{-}1)H(Y_1)$, so the bound
+is attained. Because $\C$ is continuous on a connected set, every value between $0$ and
+$\C_{\max}$ is realised. The entropy $H$ is concave, so its minimum over the polytope is
+attained at a vertex, and for small $k$ we compute $\C_{\max}$ by exact vertex
+enumeration: $k$ fair bits span exactly $[0,k{-}1]$ bits. For example, four binary
+positions that each have confidence $0.9$ carry $B=1.876$ bits and allow
+$\C_{\max}=1.407$ bits.
 
 \paragraph{The exact audit.}
 \label{app:oracle}
@@ -647,18 +683,21 @@ to four distinct rankings. Every rule also attains a perfect safe-set AUROC, but
 because $\C=0$ holds on this family \emph{if and only if} $B=0$, so any certainty
 detector scores perfectly. We therefore treat the ranking as a hypothesis to test on
 real checkpoints, and \S\ref{sec:fidelity} finds that it does not hold there.
-\input{tables/nontightness.tex}
 \input{tables/oracle_audit.tex}
 
 \section{Robustness of the residual}
 \label{app:robust}
-Three checks on the residuals of \S\ref{sec:explains}.
+We test the residuals of \S\ref{sec:explains} against three choices: the estimator
+budget $M$, the block size $k$, and the way the predictor is selected. None of them
+changes the conclusions.
 
 \paragraph{Estimator budget.}
 \label{app:budget}
 Table~\ref{tab:meter} traces the estimator's convergence in $M$ on $48$ suffix-regime
-blocks per base checkpoint, and Table~\ref{tab:msens} repeats the analysis at $M{=}256$
-on the main run's blocks.
+blocks per base checkpoint. The standard error falls as $1/\sqrt{M}$.
+Table~\ref{tab:msens} repeats the analysis at $M{=}256$ on the main run's blocks, and
+the residual moves by at most $0.034$ bits.
+\tablestack{tables/convergence.tex}{tables/m_sensitivity.tex}
 
 \paragraph{Block size.}
 \label{app:k8}
@@ -668,19 +707,27 @@ ranges, for blocks of eight positions on the two base checkpoints.
 \paragraph{Selecting the predictor without a winner's curse.}
 \label{app:nested}
 Table~\ref{tab:nested} repeats the analysis of \S\ref{sec:explains} with the model and
-feature-set selection nested inside its own folds.
-\input{tables/convergence.tex}
-\input{tables/m_sensitivity.tex}
-\input{tables/k8.tex}
-\input{tables/nested.tex}
+feature-set selection nested inside its own folds. The residual rises by at most
+$0.035$ bits.
+\tablestack{tables/k8.tex}{tables/nested.tex}
 
 \section{Further results: domains, paired comparisons and controls}
 \label{app:corrections}
-Table~\ref{tab:domain} splits the residual and the ill-defined blocks by domain, and
-Table~\ref{tab:paired} gives the paired comparisons behind \S\ref{sec:fidelity} and the
-partial correlations behind \S\ref{sec:explains}.
+
+\paragraph{Residual by domain.} Table~\ref{tab:domain} splits the residual by domain and
+reports the blocks whose $\Chat$ falls outside $[0,W]$. Prose is harder to predict than
+code on every checkpoint, and Dream-instruct prose stands apart.
+\input{tables/domain.tex}
+
+\paragraph{Paired comparisons.} Table~\ref{tab:paired} gives the paired comparisons
+between rules behind \S\ref{sec:fidelity} and the partial correlations given $W$ behind
+\S\ref{sec:explains}.
+\input{tables/paired.tex}
+
+\paragraph{Controls.}
 \label{app:controls}
-Table~\ref{tab:controls} gives the per-setting diagnostics.
+Table~\ref{tab:controls} gives the per-setting medians of the diagnostics.
+\input{tables/controls.tex}
 
 \paragraph{Decoding error is a weak stand-in for $\Chat$.} Parallel-commit error is
 usually measured as the disagreement between a parallel commit and a sequential
@@ -693,9 +740,6 @@ order-invariant.
 total-variation distance of $0.31$ to $0.37$ in the suffix regime and $0.05$ to $0.08$
 in infill. The structural invariant of \S\ref{sec:bugimpact} holds on all $3{,}030$
 blocks.
-\input{tables/domain.tex}
-\input{tables/paired.tex}
-\input{tables/controls.tex}
 
 \section{Verification on a second GPU}
 \label{app:probe}
@@ -705,6 +749,7 @@ subset of the main run's blocks, to measure both terms of \eqref{eq:orderinfo}
 in \S\ref{sec:meaning} use the random blocks ($6$ to $13$ blocks per cell), with the
 Spearman correlations pooled across settings, and the median order information there is
 at most $0.98$ bits.
+\input{tables/probe.tex}
 
 On HumanEval windows the offset gate selects the documented convention by $12.6$ to
 $15.9$ bits, against $6.9$ to $11.0$ on prose. Gate 2 with its entropy tolerance
@@ -721,6 +766,5 @@ blocks flagged below zero, the KL version is below minus two standard errors on 
 \paragraph{Reproducibility across GPUs.} On identical blocks $B$ differs between the
 A100 and the GB10 by a mean of $0.04$ to $0.19$ bits per setting and by up to $3.5$ bits
 on single Dream blocks.
-\input{tables/probe.tex}
 
 \end{document}

@@ -53,7 +53,7 @@ pct = int(math.ceil(worst_dev * 100))
 
 tex = r"""\begin{table}[!ht]
 \centering
-\small
+\footnotesize
 \setlength{\tabcolsep}{5pt}
 \caption{\textbf{The estimator converges as $1/\sqrt{M}$.} Per-block standard error of
 $\Chat_M$ and its deviation from $\Chat_{256}$ on $48$ fixed blocks per checkpoint, with

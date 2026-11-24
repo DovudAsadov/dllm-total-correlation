@@ -87,8 +87,8 @@ for k in keys:
 
 tex2 = r"""\begin{table}[t]
 \centering
-\footnotesize
-\setlength{\tabcolsep}{6pt}
+\small
+\setlength{\tabcolsep}{4pt}
 \begin{tabular}{l""" + "r" * len(PROXIES) + r"""}
 \toprule
 """ + hdr + r""" \\
@@ -117,28 +117,24 @@ for k in sorted(A["controls"]):
         f"${c['median_C_hat_bits']:.2f}$",
         f"${c['chain_rule_deviation_median_bits']:.2f}$",
         f"${c['cond_sensitivity_tv_median']:.3f}$",
-        f"${c['ref_order_n_distinct_median']:.1f}$",
         f"${c['ref_order_pairwise_disagree_median']:.2f}$",
-        f"${100*c['invariant_ok_frac']:.1f}$",
     ]) + r" \\")
 
 tex3 = r"""\begin{table}[!ht]
 \centering
 \footnotesize
-\setlength{\tabcolsep}{3.5pt}
-\begin{tabular}{lrrrrrrrr}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lrrrrrr}
 \toprule
-Model / regime & med.\ conf. & $B$ & $\widehat{\mathrm{C}}$ & chain-rule dev. & cond.\ sens. & distinct $y$ & pairwise dis. & inv.\ ok \% \\
+Model / regime & med.\ conf. & $B$ & $\widehat{\mathrm{C}}$ & chain-rule dev. & cond.\ sens. & pairwise dis. \\
 \midrule
 """ + "\n".join(crows) + r"""
 \bottomrule
 \end{tabular}
-\caption{\textbf{Controls.} Medians over blocks, except \emph{inv.\ ok}.
+\caption{\textbf{Controls.} Medians over blocks.
 \emph{chain-rule dev.}: as in \S\ref{sec:bugimpact}. \emph{cond.\ sens.}: total-variation
-distance between $p(Y_j\given c)$ and $p(Y_j\given y_i,c)$. \emph{distinct $y$} and
-\emph{pairwise dis.}: distinct greedy assignments under $8$ reveal orders, and how far
-apart they are. \emph{inv.\ ok}: percentage of blocks whose first sequential decode agrees
-with the parallel commit.}
+distance between $p(Y_j\given c)$ and $p(Y_j\given y_i,c)$. \emph{pairwise dis.}:
+disagreement between the greedy assignments obtained under $8$ reveal orders.}
 \label{tab:controls}
 \end{table}
 """
