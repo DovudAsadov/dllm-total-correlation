@@ -6,7 +6,8 @@ Dovud Asadov, Rustambek Urokov, Qobiljon Toshnazarov, Abduaziz Kayumov, Mardon H
 Husanboy Mansuraliyev
 New Uzbekistan University
 
-NeurIPS 2026 Workshop on Diffusion Language Models (DiffuLM), poster. [Paper (PDF)](paper/main.pdf)
+NeurIPS 2026 Workshop on Diffusion Language Models (DiffuLM), poster.
+[arXiv:2611.31990](https://arxiv.org/abs/2611.31990) | [Paper (PDF)](paper/main.pdf)
 
 ## Overview
 
@@ -49,6 +50,8 @@ seeded. A rerun is therefore reproducible but not bit-identical to those files.
   author    = {Asadov, Dovud and Urokov, Rustambek and Toshnazarov, Qobiljon and
                Kayumov, Abduaziz and Hazratov, Mardon and Mansuraliyev, Husanboy},
   booktitle = {NeurIPS 2026 Workshop on Diffusion Language Models (DiffuLM)},
-  year      = {2026}
+  year      = {2026},
+  eprint    = {2611.31990},
+  archivePrefix = {arXiv}
 }
 ```
